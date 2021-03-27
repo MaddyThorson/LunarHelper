@@ -16,7 +16,7 @@ namespace SMWPatcher
         {
             XmlSerializer xs = new XmlSerializer(typeof(Config));
 
-            // create or load config
+            // load config
             Config = Config.Load();
             if (Config == null)
             {
