@@ -1,0 +1,24 @@
+﻿-- working directory (all paths in this file are relative to this one)
+dir = C:/Users/mattm/Documents/Projects/ROMHacks/Hack2
+
+-- rom paths
+input = ../SMW.smc
+output = hack.smc
+temp = temp.smc
+
+-- asar
+asar_path = ../Tools/asar181/asar.exe
+patches
+[
+	Tools/Patches/retry-v2.06b/retry.asm
+]
+
+-- addmusick
+addmusick_path = Tools/AddmusicK_1.0.8/AddMusicK.exe
+
+-- lunar magic
+lm_path = ../Tools/Lunar Magic 3.2.1/Lunar Magic.exe
+levels = Levels
+test_level = 002
+test_level_dest = 104
+map16 = Levels/all.map16
