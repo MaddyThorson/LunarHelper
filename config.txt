@@ -22,6 +22,12 @@ addmusick_path = Tools/AddmusicK_1.0.8/AddMusicK.exe
 -- lunar magic
 lm_path = ../Tools/Lunar Magic 3.2.1/Lunar Magic.exe
 levels = Levels
-test_level = 002
-test_level_dest = 104
 map16 = Levels/all.map16
+
+-- emulator
+-- add '--' before 'test_enabled' to disable test level import and emulator launch
+test_enabled
+test_level = 001
+test_level_dest = 104
+retroarch_path = C:\Users\mattm\AppData\Roaming\RetroArch\retroarch.exe
+retroarch_core = C:\Users\mattm\AppData\Roaming\RetroArch\cores\snes9x_libretro.dll

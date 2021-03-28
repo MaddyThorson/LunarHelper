@@ -18,11 +18,15 @@ namespace SMWPatcher
         public String AddMusicKPath;
         public String LunarMagicPath;
         public String LevelsPath;
-        public String TestLevel;
-        public String TestLevelDest;
         public String Map16Path;
 
         public List<String> Patches = new List<string>();
+
+        public bool TestEnabled;
+        public String TestLevel;
+        public String TestLevelDest;
+        public String RetroArchPath;
+        public String RetroArchCore;
 
         #region load
 
@@ -45,6 +49,7 @@ namespace SMWPatcher
         {
             Config config = new Config();
 
+            HashSet<string> flags = new HashSet<string>();
             Dictionary<string, string> vars = new Dictionary<string, string>();
             Dictionary<string, List<string>> lists = new Dictionary<string, List<string>>();
 
@@ -91,6 +96,11 @@ namespace SMWPatcher
                         i++;
                     }
                 }
+                else if (!String.IsNullOrWhiteSpace(str))
+                {
+                    // flag
+                    flags.Add(str.Trim());
+                }
             }
 
             #endregion
@@ -104,10 +114,14 @@ namespace SMWPatcher
             vars.TryGetValue("addmusick_path", out config.AddMusicKPath);
             vars.TryGetValue("lm_path", out config.LunarMagicPath);
             vars.TryGetValue("levels", out config.LevelsPath);
-            vars.TryGetValue("test_level", out config.TestLevel);
-            vars.TryGetValue("test_level_dest", out config.TestLevelDest);
             vars.TryGetValue("map16", out config.Map16Path);
             lists.TryGetValue("patches", out config.Patches);
+
+            config.TestEnabled = flags.Contains("test_enabled");
+            vars.TryGetValue("test_level", out config.TestLevel);
+            vars.TryGetValue("test_level_dest", out config.TestLevelDest);
+            vars.TryGetValue("retroarch_path", out config.RetroArchPath);
+            vars.TryGetValue("retroarch_core", out config.RetroArchCore);
 
             return config;
         }

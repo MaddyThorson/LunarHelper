@@ -224,44 +224,7 @@ namespace SMWPatcher
                     }
 
                     Console.WriteLine();
-                }
-
-                // import test level
-                if (!String.IsNullOrWhiteSpace(Config.TestLevel) && !String.IsNullOrWhiteSpace(Config.TestLevelDest))
-                {
-                    Log("5b - Test Level", ConsoleColor.Cyan);
-                    var files = Directory.GetFiles(Config.LevelsPath, $"*{Config.TestLevel}*.mwl");
-
-                    if (!LevelRegex.IsMatch(Config.TestLevel))
-                        Log("Test Level ID must be a 3-character hex value", ConsoleColor.Red);
-                    else if (!LevelRegex.IsMatch(Config.TestLevelDest))
-                        Log("Test Level Dest ID must be a 3-character hex value", ConsoleColor.Red);
-                    else if (files.Length == 0)
-                        Log($"Test Level {Config.TestLevel} not found in {Config.LevelsPath}", ConsoleColor.Red);
-                    else
-                    {
-                        var path = files[0];
-
-                        // test level TODO
-                        Log($"Importing level {Config.TestLevel} to {Config.TestLevelDest} for testing...  ", ConsoleColor.Yellow);
-
-                        Console.ForegroundColor = ConsoleColor.Yellow;
-                        ProcessStartInfo psi = new ProcessStartInfo(Config.LunarMagicPath,
-                            $"-ImportLevel {Config.TempPath} \"{path}\" {Config.TestLevelDest}");
-                        var p = Process.Start(psi);
-                        p.WaitForExit();
-
-                        if (p.ExitCode == 0)
-                            Log("Test Level Import Success!", ConsoleColor.Green);
-                        else
-                        {
-                            Log("Test Level Import Failure!", ConsoleColor.Red);
-                            return false;
-                        }
-
-                        Console.WriteLine();
-                    }
-                }                
+                }             
             }
 
             // import map16
@@ -297,6 +260,60 @@ namespace SMWPatcher
             File.Move(Config.TempPath, Config.OutputPath);
 
             Log($"ROM patched successfully to '{Config.OutputPath}'!", ConsoleColor.Cyan);
+
+            if (Config.TestEnabled)
+            {
+                Log("Initiating Test routine!", ConsoleColor.Magenta);
+
+                // test level
+                if (!String.IsNullOrWhiteSpace(Config.TestLevel) && !String.IsNullOrWhiteSpace(Config.TestLevelDest))
+                {
+                    var files = Directory.GetFiles(Config.LevelsPath, $"*{Config.TestLevel}*.mwl");
+
+                    if (!LevelRegex.IsMatch(Config.TestLevel))
+                        Log("Test Level ID must be a 3-character hex value", ConsoleColor.Red);
+                    else if (!LevelRegex.IsMatch(Config.TestLevelDest))
+                        Log("Test Level Dest ID must be a 3-character hex value", ConsoleColor.Red);
+                    else if (files.Length == 0)
+                        Log($"Test Level {Config.TestLevel} not found in {Config.LevelsPath}", ConsoleColor.Red);
+                    else
+                    {
+                        var path = files[0];
+
+                        Log($"Importing level {Config.TestLevel} to {Config.TestLevelDest} for testing...  ", ConsoleColor.Yellow);
+
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        ProcessStartInfo psi = new ProcessStartInfo(Config.LunarMagicPath,
+                            $"-ImportLevel {Config.OutputPath} \"{path}\" {Config.TestLevelDest}");
+                        var p = Process.Start(psi);
+                        p.WaitForExit();
+
+                        if (p.ExitCode == 0)
+                            Log("Test Level Import Success!", ConsoleColor.Green);
+                        else
+                        {
+                            Log("Test Level Import Failure!", ConsoleColor.Red);
+                            return false;
+                        }
+                    }
+
+                    // retroarch
+                    if (!String.IsNullOrWhiteSpace(Config.RetroArchPath))
+                    {
+                        Log("Launching RetroArch...", ConsoleColor.Yellow);
+
+                        var fullRom = Path.GetFullPath(Config.OutputPath);
+
+                        ProcessStartInfo psi = new ProcessStartInfo(Config.RetroArchPath,
+                            $"-L \"{Config.RetroArchCore}\" \"{fullRom}\"");
+                        Process.Start(psi);
+                    }
+                }
+
+                Log("Test routine complete!", ConsoleColor.Magenta);
+                Console.WriteLine();
+            }
+
             Log("Have a nice day :)", ConsoleColor.Cyan);
 
             return true;
