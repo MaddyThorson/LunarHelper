@@ -19,6 +19,7 @@ namespace SMWPatcher
         public String LunarMagicPath;
         public String LevelsPath;
         public String Map16Path;
+        public String OverworldPath;
 
         public List<String> Patches = new List<string>();
 
@@ -116,6 +117,7 @@ namespace SMWPatcher
             vars.TryGetValue("lm_path", out config.LunarMagicPath);
             vars.TryGetValue("levels", out config.LevelsPath);
             vars.TryGetValue("map16", out config.Map16Path);
+            vars.TryGetValue("overworld", out config.OverworldPath);
             lists.TryGetValue("patches", out config.Patches);
 
             config.TestEnabled = flags.Contains("test_enabled");

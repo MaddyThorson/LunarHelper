@@ -13,6 +13,7 @@ patches
 	Tools\Patches\retry-v2.06b\retry.asm
 	Tools\Patches\skip_intro_msg.asm
 	Tools\Patches\nuke_statusbar.asm
+	Tools\Patches\autosave.asm
 ]
 
 -- gps
@@ -25,6 +26,7 @@ addmusick_path = Tools/AddmusicK_1.0.8/AddMusicK.exe
 lm_path = ../Tools/Lunar Magic 3.2.1/Lunar Magic.exe
 levels = Levels
 map16 = Levels/all.map16
+overworld = Other/overworld.smc
 
 -- emulator
 test_level = 001

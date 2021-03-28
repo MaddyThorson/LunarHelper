@@ -293,6 +293,33 @@ namespace SMWPatcher
                 Console.WriteLine();
             }
 
+            // import overworld
+            Log("6 - Overworld", ConsoleColor.Cyan);
+            if (String.IsNullOrWhiteSpace(Config.OverworldPath))
+                Log("No path to Overworld ROM provided, no overworld will be imported.", ConsoleColor.Red);
+            else if (String.IsNullOrWhiteSpace(Config.LunarMagicPath))
+                Log("No path to Lunar Magic provided, no overworld will be imported.", ConsoleColor.Red);
+            else if (!File.Exists(Config.LunarMagicPath))
+                Log("Lunar Magic not found at provided path, no overworld will be imported.", ConsoleColor.Red);
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                ProcessStartInfo psi = new ProcessStartInfo(Config.LunarMagicPath,
+                            $"-TransferOverworld {Config.TempPath} {Config.OverworldPath}");
+                var p = Process.Start(psi);
+                p.WaitForExit();
+
+                if (p.ExitCode == 0)
+                    Log("Overworld Import Success!", ConsoleColor.Green);
+                else
+                {
+                    Log("Overworld Import Failure!", ConsoleColor.Red);
+                    return false;
+                }
+
+                Console.WriteLine();
+            }
+
             // output final ROM
             if (File.Exists(Config.OutputPath))
                 File.Delete(Config.OutputPath);
