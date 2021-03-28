@@ -37,7 +37,8 @@ namespace SMWPatcher
         {
             try
             {
-                return Load(File.ReadAllText(FilePath));
+                var str = File.ReadAllText(FilePath);
+                return Load(str);
             }
             catch
             {

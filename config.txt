@@ -10,7 +10,9 @@ temp = temp.smc
 asar_path = ../Tools/asar181/asar.exe
 patches
 [
-	Tools/Patches/retry-v2.06b/retry.asm
+	Tools\Patches\retry-v2.06b\retry.asm
+	Tools\Patches\skip_intro_msg.asm
+	Tools\Patches\nuke_statusbar.asm
 ]
 
 -- gps
@@ -25,8 +27,6 @@ levels = Levels
 map16 = Levels/all.map16
 
 -- emulator
--- add '--' before 'test_enabled' to disable test level import and emulator launch
-test_enabled
 test_level = 001
 test_level_dest = 104
 retroarch_path = C:\Users\mattm\AppData\Roaming\RetroArch\retroarch.exe
