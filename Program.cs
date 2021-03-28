@@ -11,6 +11,7 @@ namespace SMWPatcher
         static public Config Config { get; private set; }
 
         static private readonly Regex LevelRegex = new Regex("[0-9a-fA-F]{3}");
+        static private Process RetroArchProcess;
 
         static void Main(string[] args)
         {
@@ -372,12 +373,14 @@ namespace SMWPatcher
                 if (!String.IsNullOrWhiteSpace(Config.RetroArchPath))
                 {
                     Log("Launching RetroArch...", ConsoleColor.Yellow);
-
                     var fullRom = Path.GetFullPath(Config.OutputPath);
+
+                    if (RetroArchProcess != null && !RetroArchProcess.HasExited)
+                        RetroArchProcess.Kill(true);
 
                     ProcessStartInfo psi = new ProcessStartInfo(Config.RetroArchPath,
                         $"-L \"{Config.RetroArchCore}\" \"{fullRom}\"");
-                    Process.Start(psi);
+                    RetroArchProcess = Process.Start(psi);
                 }
             }
 
