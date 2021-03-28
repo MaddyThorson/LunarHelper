@@ -98,8 +98,40 @@ namespace SMWPatcher
                 Console.WriteLine();
             }
 
+            // run GPS
+            Log("2 - GPS", ConsoleColor.Cyan);
+            if (String.IsNullOrWhiteSpace(Config.GPSPath))
+                Log("No path to GPS provided, no music will be inserted.", ConsoleColor.Red);
+            else if (!File.Exists(Config.GPSPath))
+                Log("GPS not found at provided path, no music will be inserted.", ConsoleColor.Red);
+            else
+            {
+                var dir = Path.GetFullPath(Path.GetDirectoryName(Config.GPSPath));
+                var rom = Path.GetRelativePath(dir, Path.GetFullPath(Config.TempPath));
+
+                ProcessStartInfo psi = new ProcessStartInfo(Config.GPSPath, $"-l \"{dir}/list.txt\" {rom}");
+                psi.RedirectStandardInput = true;
+                psi.RedirectStandardOutput = true;
+                psi.RedirectStandardError = true;
+                psi.WorkingDirectory = dir;
+
+                var p = Process.Start(psi);
+                p.WaitForExit();
+
+                if (p.ExitCode == 0)
+                    Log("GPS Success!", ConsoleColor.Green);
+                else
+                {
+                    Log("GPS Failure!", ConsoleColor.Red);
+                    //Error(p.StandardError.ReadToEnd());
+                    return false;
+                }
+
+                Console.WriteLine();
+            }
+
             // run AddMusicK
-            Log("2 - AddMusicK", ConsoleColor.Cyan);
+            Log("3 - AddMusicK", ConsoleColor.Cyan);
             if (String.IsNullOrWhiteSpace(Config.AddMusicKPath))
                 Log("No path to AddMusicK provided, no music will be inserted.", ConsoleColor.Red);
             else if (!File.Exists(Config.AddMusicKPath))
@@ -107,7 +139,6 @@ namespace SMWPatcher
             else
             {
                 var dir = Path.GetFullPath(Path.GetDirectoryName(Config.AddMusicKPath));
-                var exe = Path.GetFileName(Config.AddMusicKPath);
                 var rom = Path.GetRelativePath(dir, Path.GetFullPath(Config.TempPath));
                 Console.ForegroundColor = ConsoleColor.Gray;
 
@@ -134,7 +165,7 @@ namespace SMWPatcher
             }
 
             // import gfx
-            Log("3 - Graphics", ConsoleColor.Cyan);
+            Log("4 - Graphics", ConsoleColor.Cyan);
             if (String.IsNullOrWhiteSpace(Config.LunarMagicPath))
                 Log("No path to Lunar Magic provided, no graphics will be imported.", ConsoleColor.Red);
             else if (!File.Exists(Config.LunarMagicPath))
@@ -167,7 +198,7 @@ namespace SMWPatcher
             }
 
             // import levels
-            Log("4 - Levels", ConsoleColor.Cyan);
+            Log("5 - Levels", ConsoleColor.Cyan);
             if (String.IsNullOrWhiteSpace(Config.LevelsPath))
                 Log("No path to Levels provided, no levels will be imported.", ConsoleColor.Red);
             else if (String.IsNullOrWhiteSpace(Config.LunarMagicPath))
@@ -198,7 +229,7 @@ namespace SMWPatcher
                 // import test level
                 if (!String.IsNullOrWhiteSpace(Config.TestLevel) && !String.IsNullOrWhiteSpace(Config.TestLevelDest))
                 {
-                    Log("4b - Test Level", ConsoleColor.Cyan);
+                    Log("5b - Test Level", ConsoleColor.Cyan);
                     var files = Directory.GetFiles(Config.LevelsPath, $"*{Config.TestLevel}*.mwl");
 
                     if (!LevelRegex.IsMatch(Config.TestLevel))
@@ -234,7 +265,7 @@ namespace SMWPatcher
             }
 
             // import map16
-            Log("5 - Map16", ConsoleColor.Cyan);
+            Log("6 - Map16", ConsoleColor.Cyan);
             if (String.IsNullOrWhiteSpace(Config.Map16Path))
                 Log("No path to Levels provided, no map16 will be imported.", ConsoleColor.Red);
             else if (String.IsNullOrWhiteSpace(Config.LunarMagicPath))

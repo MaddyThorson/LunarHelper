@@ -14,6 +14,7 @@ namespace SMWPatcher
         public String WorkingDirectory;
 
         public String AsarPath;
+        public String GPSPath;
         public String AddMusicKPath;
         public String LunarMagicPath;
         public String LevelsPath;
@@ -99,6 +100,7 @@ namespace SMWPatcher
             vars.TryGetValue("output", out config.OutputPath);
             vars.TryGetValue("temp", out config.TempPath);
             vars.TryGetValue("asar_path", out config.AsarPath);
+            vars.TryGetValue("gps_path", out config.GPSPath);
             vars.TryGetValue("addmusick_path", out config.AddMusicKPath);
             vars.TryGetValue("lm_path", out config.LunarMagicPath);
             vars.TryGetValue("levels", out config.LevelsPath);

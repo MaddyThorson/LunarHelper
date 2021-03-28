@@ -13,12 +13,15 @@ patches
 	Tools/Patches/retry-v2.06b/retry.asm
 ]
 
+-- gps
+gps_path = Tools/GPS (V1.4.21)/gps.exe
+
 -- addmusick
 addmusick_path = Tools/AddmusicK_1.0.8/AddMusicK.exe
 
 -- lunar magic
 lm_path = ../Tools/Lunar Magic 3.2.1/Lunar Magic.exe
 levels = Levels
-test_level = 002
+test_level = 002x
 test_level_dest = 104
 map16 = Levels/all.map16
