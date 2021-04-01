@@ -18,6 +18,7 @@ namespace SMWPatcher
 
         public string AsarPath;
         public string GPSPath;
+        public string PixiPath;
         public string AddMusicKPath;
         public string LunarMagicPath;
         public string FlipsPath;
@@ -68,6 +69,7 @@ namespace SMWPatcher
             vars.TryGetValue("package", out config.PackagePath);
             vars.TryGetValue("asar_path", out config.AsarPath);
             vars.TryGetValue("gps_path", out config.GPSPath);
+            vars.TryGetValue("pixi_path", out config.PixiPath);
             vars.TryGetValue("addmusick_path", out config.AddMusicKPath);
             vars.TryGetValue("lm_path", out config.LunarMagicPath);
             vars.TryGetValue("flips_path", out config.FlipsPath);

@@ -9,10 +9,9 @@ patches
 	Tools\Patches\Frame_Rules.asm
 ]
 
--- gps
+-- tools
 gps_path = Tools/GPS (V1.4.21)/gps.exe
-
--- addmusick
+pixi_path = Tools/pixi_v1.32/pixi.exe
 addmusick_path = Tools/AddmusicK_1.0.8/AddMusicK.exe
 
 -- content

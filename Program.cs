@@ -292,6 +292,42 @@ namespace SMWPatcher
                 Console.WriteLine();
             }
 
+            // run PIXI
+            Log("PIXI", ConsoleColor.Cyan);
+            if (string.IsNullOrWhiteSpace(Config.PixiPath))
+                Log("No path to Pixi provided, no sprites will be inserted.", ConsoleColor.Red);
+            else if (!File.Exists(Config.PixiPath))
+                Log("Pixi not found at provided path, no sprites will be inserted.", ConsoleColor.Red);
+            else
+            {
+                var dir = Path.GetFullPath(Path.GetDirectoryName(Config.PixiPath));
+                var list = Path.Combine(dir, "list.txt");
+                Console.ForegroundColor = ConsoleColor.Gray;
+
+                // pixi is a weird little tool and we need to specify the list path
+                ProcessStartInfo psi = new ProcessStartInfo(Config.PixiPath, $"-l \"{list}\" \"{Config.TempPath}\"")
+                {
+                    RedirectStandardInput = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                };
+
+                var p = Process.Start(psi);
+                while (!p.HasExited)
+                    p.StandardInput.Write('a');
+
+                if (p.ExitCode == 0)
+                    Log("Pixi Success!", ConsoleColor.Green);
+                else
+                {
+                    Log("Pixi Failure!", ConsoleColor.Red);
+                    Error(p.StandardOutput.ReadToEnd());
+                    return false;
+                }
+
+                Console.WriteLine();
+            }
+
             // run AddMusicK
             Log("AddMusicK", ConsoleColor.Cyan);
             if (String.IsNullOrWhiteSpace(Config.AddMusicKPath))
@@ -304,7 +340,7 @@ namespace SMWPatcher
                 var rom = Path.GetRelativePath(dir, Path.GetFullPath(Config.TempPath));
                 Console.ForegroundColor = ConsoleColor.Gray;
 
-                ProcessStartInfo psi = new ProcessStartInfo(Config.AddMusicKPath, rom);
+                ProcessStartInfo psi = new ProcessStartInfo(Config.AddMusicKPath, $"\"{rom}\"");
                 psi.RedirectStandardInput = true;
                 psi.RedirectStandardOutput = true;
                 psi.RedirectStandardError = true;
