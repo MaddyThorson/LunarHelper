@@ -8,22 +8,26 @@ namespace SMWPatcher
     [Serializable]
     public class Config
     {
+        public string WorkingDirectory;
+
         public string InputPath;
         public string OutputPath;
         public string TempPath;
-        public string WorkingDirectory;
+        public string CleanPath;
+        public string PackagePath;
 
         public string AsarPath;
         public string GPSPath;
         public string AddMusicKPath;
         public string LunarMagicPath;
+        public string FlipsPath;
+
         public string LevelsPath;
         public string Map16Path;
         public string OverworldPath;
 
         public List<string> Patches = new List<string>();
 
-        public bool TestEnabled;
         public string TestLevel;
         public string TestLevelDest;
         public string RetroArchPath;
@@ -60,16 +64,18 @@ namespace SMWPatcher
             vars.TryGetValue("input", out config.InputPath);
             vars.TryGetValue("output", out config.OutputPath);
             vars.TryGetValue("temp", out config.TempPath);
+            vars.TryGetValue("clean", out config.CleanPath);
+            vars.TryGetValue("package", out config.PackagePath);
             vars.TryGetValue("asar_path", out config.AsarPath);
             vars.TryGetValue("gps_path", out config.GPSPath);
             vars.TryGetValue("addmusick_path", out config.AddMusicKPath);
             vars.TryGetValue("lm_path", out config.LunarMagicPath);
+            vars.TryGetValue("flips_path", out config.FlipsPath);
             vars.TryGetValue("levels", out config.LevelsPath);
             vars.TryGetValue("map16", out config.Map16Path);
             vars.TryGetValue("overworld", out config.OverworldPath);
             lists.TryGetValue("patches", out config.Patches);
 
-            config.TestEnabled = flags.Contains("test_enabled");
             vars.TryGetValue("test_level", out config.TestLevel);
             vars.TryGetValue("test_level_dest", out config.TestLevelDest);
             vars.TryGetValue("retroarch_path", out config.RetroArchPath);

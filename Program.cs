@@ -19,7 +19,7 @@ namespace SMWPatcher
             while (running)
             {
                 Log("Welcome to Lunar Helper ^_^", ConsoleColor.Cyan);
-                Log("B - Build, T - Build and Test, O - Test Only, ESC - Exit");
+                Log("B - Build, T - Build and Test, O - Test Only, P - Package, ESC - Exit");
                 Console.WriteLine();
 
                 var key = Console.ReadKey(true);
@@ -39,6 +39,11 @@ namespace SMWPatcher
                     case ConsoleKey.O:
                         if (Init())
                             Test();
+                        break;
+
+                    case ConsoleKey.P:
+                        if (Init() && Build())
+                            Package();
                         break;
 
                     case ConsoleKey.Escape:
@@ -385,6 +390,48 @@ namespace SMWPatcher
             }
 
             Log("Test routine complete!", ConsoleColor.Magenta);
+            Console.WriteLine();
+
+            return true;
+        }
+
+        static private bool Package()
+        {
+            Log("Packaging BPS patch...", ConsoleColor.Cyan);
+
+            if (File.Exists(Config.PackagePath))
+                File.Delete(Config.PackagePath);
+
+            if (!File.Exists(Config.OutputPath))
+                Error("Output ROM not found!");
+            else if (String.IsNullOrWhiteSpace(Config.PackagePath))
+                Error("Package path not set in config!");
+            else if (String.IsNullOrWhiteSpace(Config.CleanPath))
+                Error("No clean SMW ROM path set in config!");
+            else if (String.IsNullOrWhiteSpace(Config.FlipsPath))
+                Error("No path to FLIPS provided in config!");
+            else if (!File.Exists(Config.FlipsPath))
+                Error("Could not find FLIPS at configured path!");
+            else
+            {
+                var fullCleanPath = Path.GetFullPath(Config.CleanPath);
+                var fullOutputPath = Path.GetFullPath(Config.OutputPath);
+                var fullPackagePath = Path.GetFullPath(Config.PackagePath);
+
+                ProcessStartInfo psi = new ProcessStartInfo(Config.FlipsPath,
+                        $"--create --bps-delta \"{fullCleanPath}\" \"{fullOutputPath}\" \"{fullPackagePath}\"");
+                var p = Process.Start(psi);
+                p.WaitForExit();
+
+                if (p.ExitCode == 0)
+                    Log("Patch Creation Success!", ConsoleColor.Green);
+                else
+                {
+                    Log("Patch Creation Failure!", ConsoleColor.Red);
+                    return false;
+                }
+            }
+
             Console.WriteLine();
 
             return true;

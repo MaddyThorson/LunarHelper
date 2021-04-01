@@ -5,10 +5,14 @@ dir = C:/Users/mattm/Documents/Projects/ROMHacks/Hack2
 input = ../SMW.smc
 output = hack.smc
 temp = temp.smc
+-- clean rom is only used for creating release IPS patch
+clean = ../SMW.smc
+package = hack.bps
 
 -- tools
 asar_path = ../Tools/asar181/asar.exe
 lm_path = ../Tools/Lunar Magic 3.2.1/Lunar Magic.exe
+flips_path = ../Tools/flips.exe
 
 -- emulator and testing
 test_level = 010
