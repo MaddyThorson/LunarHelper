@@ -1,0 +1,17 @@
+﻿-- working directory (all paths are relative to this one)
+dir = C:/Users/mattm/Documents/Projects/ROMHacks/Hack2
+
+-- rom paths
+input = ../SMW.smc
+output = hack.smc
+temp = temp.smc
+
+-- tools
+asar_path = ../Tools/asar181/asar.exe
+lm_path = ../Tools/Lunar Magic 3.2.1/Lunar Magic.exe
+
+-- emulator and testing
+test_level = 010
+test_level_dest = 104
+retroarch_path = C:\Users\mattm\AppData\Roaming\RetroArch\retroarch.exe
+retroarch_core = C:\Users\mattm\AppData\Roaming\RetroArch\cores\snes9x_libretro.dll

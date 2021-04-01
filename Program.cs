@@ -63,7 +63,7 @@ namespace SMWPatcher
             Config = Config.Load();
             if (Config == null)
             {
-                Error("Could not open config.txt");
+                Error("Could not open config.txt file(s)");
                 return false;
             }
 

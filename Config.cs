@@ -8,38 +8,37 @@ namespace SMWPatcher
     [Serializable]
     public class Config
     {
-        public String InputPath;
-        public String OutputPath;
-        public String TempPath;
-        public String WorkingDirectory;
+        public string InputPath;
+        public string OutputPath;
+        public string TempPath;
+        public string WorkingDirectory;
 
-        public String AsarPath;
-        public String GPSPath;
-        public String AddMusicKPath;
-        public String LunarMagicPath;
-        public String LevelsPath;
-        public String Map16Path;
-        public String OverworldPath;
+        public string AsarPath;
+        public string GPSPath;
+        public string AddMusicKPath;
+        public string LunarMagicPath;
+        public string LevelsPath;
+        public string Map16Path;
+        public string OverworldPath;
 
-        public List<String> Patches = new List<string>();
+        public List<string> Patches = new List<string>();
 
         public bool TestEnabled;
-        public String TestLevel;
-        public String TestLevelDest;
-        public String RetroArchPath;
-        public String RetroArchCore;
+        public string TestLevel;
+        public string TestLevelDest;
+        public string RetroArchPath;
+        public string RetroArchCore;
 
         #region load
-
-        static private readonly String FilePath = "config.txt";
-        static public bool Exists => File.Exists(FilePath);
 
         static public Config Load()
         {
             try
             {
-                var str = File.ReadAllText(FilePath);
-                return Load(str);
+                List<string> data = new List<string>();
+                foreach (var file in Directory.EnumerateFiles(Directory.GetCurrentDirectory(), "config*.txt", SearchOption.TopDirectoryOnly))
+                    data.Add(File.ReadAllText(file));
+                return Load(data);
             }
             catch
             {
@@ -47,16 +46,40 @@ namespace SMWPatcher
             }
         }
 
-        static private Config Load(String data)
+        static private Config Load(List<string> data)
         {
             Config config = new Config();
 
             HashSet<string> flags = new HashSet<string>();
             Dictionary<string, string> vars = new Dictionary<string, string>();
             Dictionary<string, List<string>> lists = new Dictionary<string, List<string>>();
+            foreach (var d in data)
+                Parse(d, flags, vars, lists);
 
-            #region parse
+            vars.TryGetValue("dir", out config.WorkingDirectory);
+            vars.TryGetValue("input", out config.InputPath);
+            vars.TryGetValue("output", out config.OutputPath);
+            vars.TryGetValue("temp", out config.TempPath);
+            vars.TryGetValue("asar_path", out config.AsarPath);
+            vars.TryGetValue("gps_path", out config.GPSPath);
+            vars.TryGetValue("addmusick_path", out config.AddMusicKPath);
+            vars.TryGetValue("lm_path", out config.LunarMagicPath);
+            vars.TryGetValue("levels", out config.LevelsPath);
+            vars.TryGetValue("map16", out config.Map16Path);
+            vars.TryGetValue("overworld", out config.OverworldPath);
+            lists.TryGetValue("patches", out config.Patches);
 
+            config.TestEnabled = flags.Contains("test_enabled");
+            vars.TryGetValue("test_level", out config.TestLevel);
+            vars.TryGetValue("test_level_dest", out config.TestLevelDest);
+            vars.TryGetValue("retroarch_path", out config.RetroArchPath);
+            vars.TryGetValue("retroarch_core", out config.RetroArchCore);
+
+            return config;
+        }
+
+        static private void Parse(string data, HashSet<string> flags, Dictionary<string, string> vars, Dictionary<string, List<string>> lists)
+        {
             var lines = data.Split('\n');
             for (int i = 0; i < lines.Length; i++)
             {
@@ -98,35 +121,12 @@ namespace SMWPatcher
                         i++;
                     }
                 }
-                else if (!String.IsNullOrWhiteSpace(str))
+                else if (!string.IsNullOrWhiteSpace(str))
                 {
                     // flag
                     flags.Add(str.Trim());
                 }
             }
-
-            #endregion
-
-            vars.TryGetValue("dir", out config.WorkingDirectory);
-            vars.TryGetValue("input", out config.InputPath);
-            vars.TryGetValue("output", out config.OutputPath);
-            vars.TryGetValue("temp", out config.TempPath);
-            vars.TryGetValue("asar_path", out config.AsarPath);
-            vars.TryGetValue("gps_path", out config.GPSPath);
-            vars.TryGetValue("addmusick_path", out config.AddMusicKPath);
-            vars.TryGetValue("lm_path", out config.LunarMagicPath);
-            vars.TryGetValue("levels", out config.LevelsPath);
-            vars.TryGetValue("map16", out config.Map16Path);
-            vars.TryGetValue("overworld", out config.OverworldPath);
-            lists.TryGetValue("patches", out config.Patches);
-
-            config.TestEnabled = flags.Contains("test_enabled");
-            vars.TryGetValue("test_level", out config.TestLevel);
-            vars.TryGetValue("test_level_dest", out config.TestLevelDest);
-            vars.TryGetValue("retroarch_path", out config.RetroArchPath);
-            vars.TryGetValue("retroarch_core", out config.RetroArchCore);
-
-            return config;
         }
 
         #endregion

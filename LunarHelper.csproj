@@ -6,11 +6,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="config.txt" />
+    <None Remove="config_project.txt" />
+    <None Remove="config_user.txt" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="config.txt">
+    <Content Include="config_user.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="config_project.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

@@ -1,0 +1,21 @@
+﻿-- asar
+patches
+[
+	Tools\Patches\retry-v2.06b\retry.asm
+	Tools\Patches\skip_intro_msg.asm
+	Tools\Patches\nuke_statusbar.asm
+	Tools\Patches\autosave.asm
+	Tools\Patches\course_clear\course_clear.asm
+	Tools\Patches\Frame_Rules.asm
+]
+
+-- gps
+gps_path = Tools/GPS (V1.4.21)/gps.exe
+
+-- addmusick
+addmusick_path = Tools/AddmusicK_1.0.8/AddMusicK.exe
+
+-- content
+levels = Levels
+map16 = Other/all.map16
+overworld = Other/overworld.smc
