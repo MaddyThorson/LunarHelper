@@ -108,8 +108,125 @@ namespace SMWPatcher
                 File.Delete(Config.TempPath);
             File.Copy(Config.InputPath, Config.TempPath);
 
+            // import gfx
+            Log("Graphics", ConsoleColor.Cyan);
+            if (String.IsNullOrWhiteSpace(Config.LunarMagicPath))
+                Log("No path to Lunar Magic provided, no graphics will be imported.", ConsoleColor.Red);
+            else if (!File.Exists(Config.LunarMagicPath))
+                Log("Lunar Magic not found at provided path, no graphics will be imported.", ConsoleColor.Red);
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                ProcessStartInfo psi = new ProcessStartInfo(Config.LunarMagicPath,
+                            $"-ImportAllGraphics {Config.TempPath}");
+                var p = Process.Start(psi);
+                p.WaitForExit();
+
+                if (p.ExitCode == 0)
+                    Log("Import Graphics Success!", ConsoleColor.Green);
+                else
+                {
+                    Log("Import Graphics Failure!", ConsoleColor.Red);
+                    return false;
+                }
+
+                // rename MSC file so music track names work in LM
+                var msc_at = $"{Path.GetFileNameWithoutExtension(Config.TempPath)}.msc";
+                var msc_to = $"{Path.GetFileNameWithoutExtension(Config.OutputPath)}.msc";
+                if (File.Exists(msc_to))
+                    File.Delete(msc_to);
+                if (File.Exists(msc_at))
+                    File.Move(msc_at, msc_to);
+
+                Console.WriteLine();
+            }
+
+            // import map16
+            Log("Map16", ConsoleColor.Cyan);
+            if (String.IsNullOrWhiteSpace(Config.Map16Path))
+                Log("No path to Levels provided, no map16 will be imported.", ConsoleColor.Red);
+            else if (String.IsNullOrWhiteSpace(Config.LunarMagicPath))
+                Log("No path to Lunar Magic provided, no map16 will be imported.", ConsoleColor.Red);
+            else if (!File.Exists(Config.LunarMagicPath))
+                Log("Lunar Magic not found at provided path, no map16 will be imported.", ConsoleColor.Red);
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                ProcessStartInfo psi = new ProcessStartInfo(Config.LunarMagicPath,
+                            $"-ImportAllMap16 {Config.TempPath} {Config.Map16Path}");
+                var p = Process.Start(psi);
+                p.WaitForExit();
+
+                if (p.ExitCode == 0)
+                    Log("Map16 Import Success!", ConsoleColor.Green);
+                else
+                {
+                    Log("Map16 Import Failure!", ConsoleColor.Red);
+                    return false;
+                }
+
+                Console.WriteLine();
+            }
+
+            // import overworld
+            Log("Overworld", ConsoleColor.Cyan);
+            if (String.IsNullOrWhiteSpace(Config.OverworldPath))
+                Log("No path to Overworld ROM provided, no overworld will be imported.", ConsoleColor.Red);
+            else if (String.IsNullOrWhiteSpace(Config.LunarMagicPath))
+                Log("No path to Lunar Magic provided, no overworld will be imported.", ConsoleColor.Red);
+            else if (!File.Exists(Config.LunarMagicPath))
+                Log("Lunar Magic not found at provided path, no overworld will be imported.", ConsoleColor.Red);
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                ProcessStartInfo psi = new ProcessStartInfo(Config.LunarMagicPath,
+                            $"-TransferOverworld {Config.TempPath} {Config.OverworldPath}");
+                var p = Process.Start(psi);
+                p.WaitForExit();
+
+                if (p.ExitCode == 0)
+                    Log("Overworld Import Success!", ConsoleColor.Green);
+                else
+                {
+                    Log("Overworld Import Failure!", ConsoleColor.Red);
+                    return false;
+                }
+
+                Console.WriteLine();
+            }
+
+            // import levels
+            Log("Levels", ConsoleColor.Cyan);
+            if (String.IsNullOrWhiteSpace(Config.LevelsPath))
+                Log("No path to Levels provided, no levels will be imported.", ConsoleColor.Red);
+            else if (String.IsNullOrWhiteSpace(Config.LunarMagicPath))
+                Log("No path to Lunar Magic provided, no levels will be imported.", ConsoleColor.Red);
+            else if (!File.Exists(Config.LunarMagicPath))
+                Log("Lunar Magic not found at provided path, no levels will be imported.", ConsoleColor.Red);
+            else
+            {
+                // import levels
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    ProcessStartInfo psi = new ProcessStartInfo(Config.LunarMagicPath,
+                                $"-ImportMultLevels {Config.TempPath} {Config.LevelsPath}");
+                    var p = Process.Start(psi);
+                    p.WaitForExit();
+
+                    if (p.ExitCode == 0)
+                        Log("Levels Import Success!", ConsoleColor.Green);
+                    else
+                    {
+                        Log("Levels Import Failure!", ConsoleColor.Red);
+                        return false;
+                    }
+
+                    Console.WriteLine();
+                }
+            }
+
             // apply asar patches
-            Log("1 - Patches", ConsoleColor.Cyan);
+            Log("Patches", ConsoleColor.Cyan);
             if (String.IsNullOrWhiteSpace(Config.AsarPath))
                 Log("No path to Asar provided, not applying any patches.", ConsoleColor.Red);
             else if (!File.Exists(Config.AsarPath))
@@ -144,7 +261,7 @@ namespace SMWPatcher
             }
 
             // run GPS
-            Log("2 - GPS", ConsoleColor.Cyan);
+            Log("GPS", ConsoleColor.Cyan);
             if (String.IsNullOrWhiteSpace(Config.GPSPath))
                 Log("No path to GPS provided, no music will be inserted.", ConsoleColor.Red);
             else if (!File.Exists(Config.GPSPath))
@@ -176,7 +293,7 @@ namespace SMWPatcher
             }
 
             // run AddMusicK
-            Log("3 - AddMusicK", ConsoleColor.Cyan);
+            Log("AddMusicK", ConsoleColor.Cyan);
             if (String.IsNullOrWhiteSpace(Config.AddMusicKPath))
                 Log("No path to AddMusicK provided, no music will be inserted.", ConsoleColor.Red);
             else if (!File.Exists(Config.AddMusicKPath))
@@ -203,123 +320,6 @@ namespace SMWPatcher
                 {
                     Log("AddMusicK Failure!", ConsoleColor.Red);
                     Error(p.StandardError.ReadToEnd());
-                    return false;
-                }
-
-                Console.WriteLine();
-            }
-
-            // import gfx
-            Log("4 - Graphics", ConsoleColor.Cyan);
-            if (String.IsNullOrWhiteSpace(Config.LunarMagicPath))
-                Log("No path to Lunar Magic provided, no graphics will be imported.", ConsoleColor.Red);
-            else if (!File.Exists(Config.LunarMagicPath))
-                Log("Lunar Magic not found at provided path, no graphics will be imported.", ConsoleColor.Red);
-            else
-            {
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                ProcessStartInfo psi = new ProcessStartInfo(Config.LunarMagicPath,
-                            $"-ImportAllGraphics {Config.TempPath}");
-                var p = Process.Start(psi);
-                p.WaitForExit();
-
-                if (p.ExitCode == 0)
-                    Log("Import Graphics Success!", ConsoleColor.Green);
-                else
-                {
-                    Log("Import Graphics Failure!", ConsoleColor.Red);
-                    return false;
-                }
-
-                // rename MSC file so music track names work in LM
-                var msc_at = $"{Path.GetFileNameWithoutExtension(Config.TempPath)}.msc";
-                var msc_to = $"{Path.GetFileNameWithoutExtension(Config.OutputPath)}.msc";
-                if (File.Exists(msc_to))
-                    File.Delete(msc_to);
-                if (File.Exists(msc_at))
-                    File.Move(msc_at, msc_to);
-
-                Console.WriteLine();
-            }
-
-            // import levels
-            Log("5 - Levels", ConsoleColor.Cyan);
-            if (String.IsNullOrWhiteSpace(Config.LevelsPath))
-                Log("No path to Levels provided, no levels will be imported.", ConsoleColor.Red);
-            else if (String.IsNullOrWhiteSpace(Config.LunarMagicPath))
-                Log("No path to Lunar Magic provided, no levels will be imported.", ConsoleColor.Red);
-            else if (!File.Exists(Config.LunarMagicPath))
-                Log("Lunar Magic not found at provided path, no levels will be imported.", ConsoleColor.Red);
-            else
-            {
-                // import levels
-                {
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    ProcessStartInfo psi = new ProcessStartInfo(Config.LunarMagicPath,
-                                $"-ImportMultLevels {Config.TempPath} {Config.LevelsPath}");
-                    var p = Process.Start(psi);
-                    p.WaitForExit();
-
-                    if (p.ExitCode == 0)
-                        Log("Levels Import Success!", ConsoleColor.Green);
-                    else
-                    {
-                        Log("Levels Import Failure!", ConsoleColor.Red);
-                        return false;
-                    }
-
-                    Console.WriteLine();
-                }             
-            }
-
-            // import map16
-            Log("6 - Map16", ConsoleColor.Cyan);
-            if (String.IsNullOrWhiteSpace(Config.Map16Path))
-                Log("No path to Levels provided, no map16 will be imported.", ConsoleColor.Red);
-            else if (String.IsNullOrWhiteSpace(Config.LunarMagicPath))
-                Log("No path to Lunar Magic provided, no map16 will be imported.", ConsoleColor.Red);
-            else if (!File.Exists(Config.LunarMagicPath))
-                Log("Lunar Magic not found at provided path, no map16 will be imported.", ConsoleColor.Red);
-            else
-            {
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                ProcessStartInfo psi = new ProcessStartInfo(Config.LunarMagicPath,
-                            $"-ImportAllMap16 {Config.TempPath} {Config.Map16Path}");
-                var p = Process.Start(psi);
-                p.WaitForExit();
-
-                if (p.ExitCode == 0)
-                    Log("Map16 Import Success!", ConsoleColor.Green);
-                else
-                {
-                    Log("Map16 Import Failure!", ConsoleColor.Red);
-                    return false;
-                }
-
-                Console.WriteLine();
-            }
-
-            // import overworld
-            Log("6 - Overworld", ConsoleColor.Cyan);
-            if (String.IsNullOrWhiteSpace(Config.OverworldPath))
-                Log("No path to Overworld ROM provided, no overworld will be imported.", ConsoleColor.Red);
-            else if (String.IsNullOrWhiteSpace(Config.LunarMagicPath))
-                Log("No path to Lunar Magic provided, no overworld will be imported.", ConsoleColor.Red);
-            else if (!File.Exists(Config.LunarMagicPath))
-                Log("Lunar Magic not found at provided path, no overworld will be imported.", ConsoleColor.Red);
-            else
-            {
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                ProcessStartInfo psi = new ProcessStartInfo(Config.LunarMagicPath,
-                            $"-TransferOverworld {Config.TempPath} {Config.OverworldPath}");
-                var p = Process.Start(psi);
-                p.WaitForExit();
-
-                if (p.ExitCode == 0)
-                    Log("Overworld Import Success!", ConsoleColor.Green);
-                else
-                {
-                    Log("Overworld Import Failure!", ConsoleColor.Red);
                     return false;
                 }
 
