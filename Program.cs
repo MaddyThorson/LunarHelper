@@ -325,6 +325,33 @@ namespace SMWPatcher
                     return false;
                 }
 
+                // move a bunch of generated files
+                {
+                    var fromDir = Path.GetDirectoryName(Path.GetFullPath(Config.TempPath));
+                    var fromFile = Path.GetFileNameWithoutExtension(Config.TempPath);
+                    var toDir = Path.GetDirectoryName(Path.GetFullPath(Config.OutputPath));
+                    var toFile = Path.GetFileNameWithoutExtension(Config.OutputPath);
+
+                    var from = Path.Combine(fromDir, fromFile);
+                    var to = Path.Combine(toDir, toFile);
+
+                    void Move(string ext)
+                    {
+                        if (File.Exists($"{from}.{ext}"))
+                        {
+                            if (File.Exists($"{to}.{ext}"))
+                                File.Delete($"{to}.{ext}");
+                            File.Move($"{from}.{ext}", $"{to}.{ext}");
+                        }
+                    }
+
+                    Move("extmod");
+                    Move("mw2");
+                    Move("mwt");
+                    Move("s16");
+                    Move("ssc");
+                }
+
                 Console.WriteLine();
             }
 
