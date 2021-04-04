@@ -19,7 +19,8 @@ namespace SMWPatcher
             while (running)
             {
                 Log("Welcome to Lunar Helper ^_^", ConsoleColor.Cyan);
-                Log("B - Build, T - Build and Test, O - Test Only, P - Package, ESC - Exit");
+                Log("B - Build, T - Build and Test, R - Test Only");
+                Log("O - Copy Output to Overworld, P - Package, ESC - Exit");
                 Console.WriteLine();
 
                 var key = Console.ReadKey(true);
@@ -36,9 +37,14 @@ namespace SMWPatcher
                             Test();
                         break;
 
-                    case ConsoleKey.O:
+                    case ConsoleKey.R:
                         if (Init())
                             Test();
+                        break;
+
+                    case ConsoleKey.O:
+                        if (Init())
+                            Overworld();
                         break;
 
                     case ConsoleKey.P:
@@ -73,11 +79,11 @@ namespace SMWPatcher
             }
 
             // set the working directory
-            if (!String.IsNullOrWhiteSpace(Config.WorkingDirectory))
+            if (!string.IsNullOrWhiteSpace(Config.WorkingDirectory))
                 Directory.SetCurrentDirectory(Config.WorkingDirectory);
 
             // some error checks
-            if (String.IsNullOrWhiteSpace(Config.InputPath))
+            if (string.IsNullOrWhiteSpace(Config.InputPath))
             {
                 Error("No Input ROM path provided!");
                 return false;
@@ -87,12 +93,12 @@ namespace SMWPatcher
                 Error($"Input ROM file '{Config.InputPath}' does not exist!");
                 return false;
             }
-            else if (String.IsNullOrWhiteSpace(Config.OutputPath))
+            else if (string.IsNullOrWhiteSpace(Config.OutputPath))
             {
                 Error("No Output ROM path provided!");
                 return false;
             }
-            else if (String.IsNullOrWhiteSpace(Config.TempPath))
+            else if (string.IsNullOrWhiteSpace(Config.TempPath))
             {
                 Error("No Temp ROM path provided!");
                 return false;
@@ -110,7 +116,7 @@ namespace SMWPatcher
 
             // import gfx
             Log("Graphics", ConsoleColor.Cyan);
-            if (String.IsNullOrWhiteSpace(Config.LunarMagicPath))
+            if (string.IsNullOrWhiteSpace(Config.LunarMagicPath))
                 Log("No path to Lunar Magic provided, no graphics will be imported.", ConsoleColor.Red);
             else if (!File.Exists(Config.LunarMagicPath))
                 Log("Lunar Magic not found at provided path, no graphics will be imported.", ConsoleColor.Red);
@@ -143,9 +149,9 @@ namespace SMWPatcher
 
             // import map16
             Log("Map16", ConsoleColor.Cyan);
-            if (String.IsNullOrWhiteSpace(Config.Map16Path))
+            if (string.IsNullOrWhiteSpace(Config.Map16Path))
                 Log("No path to Levels provided, no map16 will be imported.", ConsoleColor.Red);
-            else if (String.IsNullOrWhiteSpace(Config.LunarMagicPath))
+            else if (string.IsNullOrWhiteSpace(Config.LunarMagicPath))
                 Log("No path to Lunar Magic provided, no map16 will be imported.", ConsoleColor.Red);
             else if (!File.Exists(Config.LunarMagicPath))
                 Log("Lunar Magic not found at provided path, no map16 will be imported.", ConsoleColor.Red);
@@ -170,9 +176,9 @@ namespace SMWPatcher
 
             // import overworld
             Log("Overworld", ConsoleColor.Cyan);
-            if (String.IsNullOrWhiteSpace(Config.OverworldPath))
+            if (string.IsNullOrWhiteSpace(Config.OverworldPath))
                 Log("No path to Overworld ROM provided, no overworld will be imported.", ConsoleColor.Red);
-            else if (String.IsNullOrWhiteSpace(Config.LunarMagicPath))
+            else if (string.IsNullOrWhiteSpace(Config.LunarMagicPath))
                 Log("No path to Lunar Magic provided, no overworld will be imported.", ConsoleColor.Red);
             else if (!File.Exists(Config.LunarMagicPath))
                 Log("Lunar Magic not found at provided path, no overworld will be imported.", ConsoleColor.Red);
@@ -195,39 +201,9 @@ namespace SMWPatcher
                 Console.WriteLine();
             }
 
-            // import levels
-            Log("Levels", ConsoleColor.Cyan);
-            if (String.IsNullOrWhiteSpace(Config.LevelsPath))
-                Log("No path to Levels provided, no levels will be imported.", ConsoleColor.Red);
-            else if (String.IsNullOrWhiteSpace(Config.LunarMagicPath))
-                Log("No path to Lunar Magic provided, no levels will be imported.", ConsoleColor.Red);
-            else if (!File.Exists(Config.LunarMagicPath))
-                Log("Lunar Magic not found at provided path, no levels will be imported.", ConsoleColor.Red);
-            else
-            {
-                // import levels
-                {
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    ProcessStartInfo psi = new ProcessStartInfo(Config.LunarMagicPath,
-                                $"-ImportMultLevels {Config.TempPath} {Config.LevelsPath}");
-                    var p = Process.Start(psi);
-                    p.WaitForExit();
-
-                    if (p.ExitCode == 0)
-                        Log("Levels Import Success!", ConsoleColor.Green);
-                    else
-                    {
-                        Log("Levels Import Failure!", ConsoleColor.Red);
-                        return false;
-                    }
-
-                    Console.WriteLine();
-                }
-            }
-
             // apply asar patches
             Log("Patches", ConsoleColor.Cyan);
-            if (String.IsNullOrWhiteSpace(Config.AsarPath))
+            if (string.IsNullOrWhiteSpace(Config.AsarPath))
                 Log("No path to Asar provided, not applying any patches.", ConsoleColor.Red);
             else if (!File.Exists(Config.AsarPath))
                 Log("Asar not found at provided path, not applying any patches.", ConsoleColor.Red);
@@ -262,7 +238,7 @@ namespace SMWPatcher
 
             // run GPS
             Log("GPS", ConsoleColor.Cyan);
-            if (String.IsNullOrWhiteSpace(Config.GPSPath))
+            if (string.IsNullOrWhiteSpace(Config.GPSPath))
                 Log("No path to GPS provided, no music will be inserted.", ConsoleColor.Red);
             else if (!File.Exists(Config.GPSPath))
                 Log("GPS not found at provided path, no music will be inserted.", ConsoleColor.Red);
@@ -304,7 +280,6 @@ namespace SMWPatcher
                 var list = Path.Combine(dir, "list.txt");
                 Console.ForegroundColor = ConsoleColor.Gray;
 
-                // pixi is a weird little tool and we need to specify the list path
                 ProcessStartInfo psi = new ProcessStartInfo(Config.PixiPath, $"-l \"{list}\" \"{Config.TempPath}\"")
                 {
                     RedirectStandardInput = true,
@@ -357,7 +332,7 @@ namespace SMWPatcher
 
             // run AddMusicK
             Log("AddMusicK", ConsoleColor.Cyan);
-            if (String.IsNullOrWhiteSpace(Config.AddMusicKPath))
+            if (string.IsNullOrWhiteSpace(Config.AddMusicKPath))
                 Log("No path to AddMusicK provided, no music will be inserted.", ConsoleColor.Red);
             else if (!File.Exists(Config.AddMusicKPath))
                 Log("AddMusicK not found at provided path, no music will be inserted.", ConsoleColor.Red);
@@ -389,6 +364,36 @@ namespace SMWPatcher
                 Console.WriteLine();
             }
 
+            // import levels
+            Log("Levels", ConsoleColor.Cyan);
+            if (string.IsNullOrWhiteSpace(Config.LevelsPath))
+                Log("No path to Levels provided, no levels will be imported.", ConsoleColor.Red);
+            else if (string.IsNullOrWhiteSpace(Config.LunarMagicPath))
+                Log("No path to Lunar Magic provided, no levels will be imported.", ConsoleColor.Red);
+            else if (!File.Exists(Config.LunarMagicPath))
+                Log("Lunar Magic not found at provided path, no levels will be imported.", ConsoleColor.Red);
+            else
+            {
+                // import levels
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    ProcessStartInfo psi = new ProcessStartInfo(Config.LunarMagicPath,
+                                $"-ImportMultLevels {Config.TempPath} {Config.LevelsPath}");
+                    var p = Process.Start(psi);
+                    p.WaitForExit();
+
+                    if (p.ExitCode == 0)
+                        Log("Levels Import Success!", ConsoleColor.Green);
+                    else
+                    {
+                        Log("Levels Import Failure!", ConsoleColor.Red);
+                        return false;
+                    }
+
+                    Console.WriteLine();
+                }
+            }
+
             // output final ROM
             if (File.Exists(Config.OutputPath))
                 File.Delete(Config.OutputPath);
@@ -406,7 +411,7 @@ namespace SMWPatcher
             Log("Initiating Test routine!", ConsoleColor.Magenta);
 
             // test level
-            if (!String.IsNullOrWhiteSpace(Config.TestLevel) && !String.IsNullOrWhiteSpace(Config.TestLevelDest))
+            if (!string.IsNullOrWhiteSpace(Config.TestLevel) && !string.IsNullOrWhiteSpace(Config.TestLevelDest))
             {
                 var files = Directory.GetFiles(Config.LevelsPath, $"*{Config.TestLevel}*.mwl");
 
@@ -438,7 +443,7 @@ namespace SMWPatcher
                 }
 
                 // retroarch
-                if (!String.IsNullOrWhiteSpace(Config.RetroArchPath))
+                if (!string.IsNullOrWhiteSpace(Config.RetroArchPath))
                 {
                     Log("Launching RetroArch...", ConsoleColor.Yellow);
                     var fullRom = Path.GetFullPath(Config.OutputPath);
@@ -458,6 +463,28 @@ namespace SMWPatcher
             return true;
         }
 
+        static private bool Overworld()
+        {
+            Log("Copying Output ROM to Overworld Path", ConsoleColor.Cyan);
+            if (string.IsNullOrWhiteSpace(Config.OverworldPath))
+                Log("No path to Overworld ROM provided! Copy failed.", ConsoleColor.Red);
+            else if (!File.Exists(Config.OutputPath))
+                Log("Output ROM does not exist! Copy failed. Build first!", ConsoleColor.Red);
+            else
+            {
+                if (File.Exists(Config.OverworldPath))
+                    File.Delete(Config.OverworldPath);
+                File.Move(Config.OutputPath, Config.OverworldPath);
+
+                Log("Overworld ROM overwritten with Output ROM!", ConsoleColor.Green);
+                Console.WriteLine();
+                return true;
+            }
+
+            Console.WriteLine();
+            return false;
+        }
+
         static private bool Package()
         {
             Log("Packaging BPS patch...", ConsoleColor.Cyan);
@@ -467,11 +494,11 @@ namespace SMWPatcher
 
             if (!File.Exists(Config.OutputPath))
                 Error("Output ROM not found!");
-            else if (String.IsNullOrWhiteSpace(Config.PackagePath))
+            else if (string.IsNullOrWhiteSpace(Config.PackagePath))
                 Error("Package path not set in config!");
-            else if (String.IsNullOrWhiteSpace(Config.CleanPath))
+            else if (string.IsNullOrWhiteSpace(Config.CleanPath))
                 Error("No clean SMW ROM path set in config!");
-            else if (String.IsNullOrWhiteSpace(Config.FlipsPath))
+            else if (string.IsNullOrWhiteSpace(Config.FlipsPath))
                 Error("No path to FLIPS provided in config!");
             else if (!File.Exists(Config.FlipsPath))
                 Error("Could not find FLIPS at configured path!");
@@ -500,19 +527,19 @@ namespace SMWPatcher
             return true;
         }
 
-        static private void Error(String error)
+        static private void Error(string error)
         {
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine($"ERROR: {error}");
         }
 
-        static private void Log(String msg, ConsoleColor color = ConsoleColor.White)
+        static private void Log(string msg, ConsoleColor color = ConsoleColor.White)
         {
             Console.ForegroundColor = color;
             Console.WriteLine($"{msg}");
         }
 
-        static private void Lognl(String msg, ConsoleColor color = ConsoleColor.White)
+        static private void Lognl(string msg, ConsoleColor color = ConsoleColor.White)
         {
             Console.ForegroundColor = color;
             Console.Write($"{msg}");
