@@ -150,7 +150,7 @@ namespace SMWPatcher
             // import map16
             Log("Map16", ConsoleColor.Cyan);
             if (string.IsNullOrWhiteSpace(Config.Map16Path))
-                Log("No path to Levels provided, no map16 will be imported.", ConsoleColor.Red);
+                Log("No path to Map16 provided, no map16 will be imported.", ConsoleColor.Red);
             else if (string.IsNullOrWhiteSpace(Config.LunarMagicPath))
                 Log("No path to Lunar Magic provided, no map16 will be imported.", ConsoleColor.Red);
             else if (!File.Exists(Config.LunarMagicPath))
@@ -168,6 +168,33 @@ namespace SMWPatcher
                 else
                 {
                     Log("Map16 Import Failure!", ConsoleColor.Red);
+                    return false;
+                }
+
+                Console.WriteLine();
+            }
+
+            // import shared palette
+            Log("Shared Palette", ConsoleColor.Cyan);
+            if (string.IsNullOrWhiteSpace(Config.SharedPalettePath))
+                Log("No path to Shared Palette provided, no palette will be imported.", ConsoleColor.Red);
+            else if (string.IsNullOrWhiteSpace(Config.LunarMagicPath))
+                Log("No path to Lunar Magic provided, no palette will be imported.", ConsoleColor.Red);
+            else if (!File.Exists(Config.LunarMagicPath))
+                Log("Lunar Magic not found at provided path, no palette will be imported.", ConsoleColor.Red);
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                ProcessStartInfo psi = new ProcessStartInfo(Config.LunarMagicPath,
+                            $"-ImportSharedPalette {Config.TempPath} {Config.SharedPalettePath}");
+                var p = Process.Start(psi);
+                p.WaitForExit();
+
+                if (p.ExitCode == 0)
+                    Log("Shared Palette Import Success!", ConsoleColor.Green);
+                else
+                {
+                    Log("Shared Palette Import Failure!", ConsoleColor.Red);
                     return false;
                 }
 

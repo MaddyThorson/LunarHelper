@@ -25,6 +25,7 @@ namespace SMWPatcher
 
         public string LevelsPath;
         public string Map16Path;
+        public string SharedPalettePath;
         public string OverworldPath;
 
         public List<string> Patches = new List<string>();
@@ -75,6 +76,7 @@ namespace SMWPatcher
             vars.TryGetValue("flips_path", out config.FlipsPath);
             vars.TryGetValue("levels", out config.LevelsPath);
             vars.TryGetValue("map16", out config.Map16Path);
+            vars.TryGetValue("shared_palette", out config.SharedPalettePath);
             vars.TryGetValue("overworld", out config.OverworldPath);
             lists.TryGetValue("patches", out config.Patches);
 
