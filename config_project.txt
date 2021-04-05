@@ -16,6 +16,7 @@ patches
 gps_path = Tools/GPS (V1.4.21)/gps.exe
 pixi_path = Tools/pixi_v1.32/pixi.exe
 addmusick_path = Tools/AddmusicK_1.0.8/AddMusicK.exe
+uberasm_path = Tools/UberASMTool14/UberASMTool.exe
 
 -- content
 levels = Levels

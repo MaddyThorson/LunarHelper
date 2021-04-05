@@ -228,7 +228,7 @@ namespace SMWPatcher
                 Console.WriteLine();
             }
 
-            // apply asar patches
+            // asar patches
             Log("Patches", ConsoleColor.Cyan);
             if (string.IsNullOrWhiteSpace(Config.AsarPath))
                 Log("No path to Asar provided, not applying any patches.", ConsoleColor.Red);
@@ -263,12 +263,44 @@ namespace SMWPatcher
                 Console.WriteLine();
             }
 
+            // uber ASM
+            Log("Uber ASM", ConsoleColor.Cyan);
+            if (string.IsNullOrWhiteSpace(Config.UberASMPath))
+                Log("No path to UberASMTool provided, no UberASM will be inserted.", ConsoleColor.Red);
+            else if (!File.Exists(Config.UberASMPath))
+                Log("UberASMTool not found at provided path, no UberASM will be inserted.", ConsoleColor.Red);
+            else
+            {
+                var dir = Path.GetFullPath(Path.GetDirectoryName(Config.UberASMPath));
+                var rom = Path.GetRelativePath(dir, Path.GetFullPath(Config.TempPath));
+
+                ProcessStartInfo psi = new ProcessStartInfo(Config.UberASMPath, $"list.txt \"{rom}\"");
+                psi.RedirectStandardInput = true;
+                psi.RedirectStandardOutput = true;
+                psi.RedirectStandardError = true;
+                psi.WorkingDirectory = dir;
+
+                var p = Process.Start(psi);
+                p.WaitForExit();
+
+                if (p.ExitCode == 0)
+                    Log("UberASM Success!", ConsoleColor.Green);
+                else
+                {
+                    Log("UberASM Failure!", ConsoleColor.Red);
+                    Error(p.StandardError.ReadToEnd());
+                    return false;
+                }
+
+                Console.WriteLine();
+            }
+
             // run GPS
             Log("GPS", ConsoleColor.Cyan);
             if (string.IsNullOrWhiteSpace(Config.GPSPath))
-                Log("No path to GPS provided, no music will be inserted.", ConsoleColor.Red);
+                Log("No path to GPS provided, no blocks will be inserted.", ConsoleColor.Red);
             else if (!File.Exists(Config.GPSPath))
-                Log("GPS not found at provided path, no music will be inserted.", ConsoleColor.Red);
+                Log("GPS not found at provided path, no blocks will be inserted.", ConsoleColor.Red);
             else
             {
                 var dir = Path.GetFullPath(Path.GetDirectoryName(Config.GPSPath));
@@ -288,7 +320,7 @@ namespace SMWPatcher
                 else
                 {
                     Log("GPS Failure!", ConsoleColor.Red);
-                    //Error(p.StandardError.ReadToEnd());
+                    Error(p.StandardError.ReadToEnd());
                     return false;
                 }
 
