@@ -16,7 +16,5 @@ lm_path = ../Tools/Lunar Magic 3.2.1/Lunar Magic.exe
 flips_path = ../Tools/flips.exe
 
 -- emulator and testing
-test_level = 010
-test_level_dest = 104
 retroarch_path = C:\Users\mattm\AppData\Roaming\RetroArch\retroarch.exe
 retroarch_core = C:\Users\mattm\AppData\Roaming\RetroArch\cores\snes9x_libretro.dll

@@ -1,7 +1,7 @@
 ﻿-- asar
 patches
 [
-	Patches\retry-v2.06b\retry.asm
+	Patches\retry\retry.asm
 	Patches\skip_intro_msg.asm
 	Patches\nuke_statusbar.asm
 	Patches\course_clear\course_clear.asm

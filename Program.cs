@@ -468,20 +468,20 @@ namespace SMWPatcher
                         return false;
                     }
                 }
+            }
 
-                // retroarch
-                if (!string.IsNullOrWhiteSpace(Config.RetroArchPath))
-                {
-                    Log("Launching RetroArch...", ConsoleColor.Yellow);
-                    var fullRom = Path.GetFullPath(Config.OutputPath);
+            // retroarch
+            if (!string.IsNullOrWhiteSpace(Config.RetroArchPath))
+            {
+                Log("Launching RetroArch...", ConsoleColor.Yellow);
+                var fullRom = Path.GetFullPath(Config.OutputPath);
 
-                    if (RetroArchProcess != null && !RetroArchProcess.HasExited)
-                        RetroArchProcess.Kill(true);
+                if (RetroArchProcess != null && !RetroArchProcess.HasExited)
+                    RetroArchProcess.Kill(true);
 
-                    ProcessStartInfo psi = new ProcessStartInfo(Config.RetroArchPath,
-                        $"-L \"{Config.RetroArchCore}\" \"{fullRom}\"");
-                    RetroArchProcess = Process.Start(psi);
-                }
+                ProcessStartInfo psi = new ProcessStartInfo(Config.RetroArchPath,
+                    $"-L \"{Config.RetroArchCore}\" \"{fullRom}\"");
+                RetroArchProcess = Process.Start(psi);
             }
 
             Log("Test routine complete!", ConsoleColor.Magenta);
