@@ -306,7 +306,7 @@ namespace SMWPatcher
                 var dir = Path.GetFullPath(Path.GetDirectoryName(Config.GPSPath));
                 var rom = Path.GetRelativePath(dir, Path.GetFullPath(Config.TempPath));
 
-                ProcessStartInfo psi = new ProcessStartInfo(Config.GPSPath, $"-l \"{dir}/list.txt\" {rom}");
+                ProcessStartInfo psi = new ProcessStartInfo(Config.GPSPath, $"-l \"{dir}/list.txt\" \"{rom}\"");
                 psi.RedirectStandardInput = true;
                 psi.RedirectStandardOutput = true;
                 psi.RedirectStandardError = true;
@@ -531,9 +531,7 @@ namespace SMWPatcher
                 Log("Output ROM does not exist! Copy failed. Build first!", ConsoleColor.Red);
             else
             {
-                if (File.Exists(Config.OverworldPath))
-                    File.Delete(Config.OverworldPath);
-                File.Move(Config.OutputPath, Config.OverworldPath);
+                File.Copy(Config.OutputPath, Config.OverworldPath, true);
 
                 Log("Overworld ROM overwritten with Output ROM!", ConsoleColor.Green);
                 Console.WriteLine();
