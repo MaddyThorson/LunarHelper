@@ -359,33 +359,6 @@ namespace SMWPatcher
                     return false;
                 }
 
-                // move a bunch of generated files
-                {
-                    var fromDir = Path.GetDirectoryName(Path.GetFullPath(Config.TempPath));
-                    var fromFile = Path.GetFileNameWithoutExtension(Config.TempPath);
-                    var toDir = Path.GetDirectoryName(Path.GetFullPath(Config.OutputPath));
-                    var toFile = Path.GetFileNameWithoutExtension(Config.OutputPath);
-
-                    var from = Path.Combine(fromDir, fromFile);
-                    var to = Path.Combine(toDir, toFile);
-
-                    void Move(string ext)
-                    {
-                        if (File.Exists($"{from}.{ext}"))
-                        {
-                            if (File.Exists($"{to}.{ext}"))
-                                File.Delete($"{to}.{ext}");
-                            File.Move($"{from}.{ext}", $"{to}.{ext}");
-                        }
-                    }
-
-                    Move("extmod");
-                    Move("mw2");
-                    Move("mwt");
-                    Move("s16");
-                    Move("ssc");
-                }
-
                 Console.WriteLine();
             }
 
@@ -399,11 +372,10 @@ namespace SMWPatcher
             {
                 var dir = Path.GetFullPath(Path.GetDirectoryName(Config.AddMusicKPath));
                 var rom = Path.GetRelativePath(dir, Path.GetFullPath(Config.TempPath));
-                Console.ForegroundColor = ConsoleColor.Gray;
+                Console.ForegroundColor = ConsoleColor.Yellow;
 
                 ProcessStartInfo psi = new ProcessStartInfo(Config.AddMusicKPath, $"\"{rom}\"");
                 psi.RedirectStandardInput = true;
-                psi.RedirectStandardOutput = true;
                 psi.RedirectStandardError = true;
                 psi.WorkingDirectory = dir;
 
@@ -454,9 +426,17 @@ namespace SMWPatcher
             }
 
             // output final ROM
-            if (File.Exists(Config.OutputPath))
-                File.Delete(Config.OutputPath);
-            File.Move(Config.TempPath, Config.OutputPath);
+            File.Copy(Config.TempPath, Config.OutputPath, true);
+
+            // copy other generated files
+            {
+                var path = Path.GetDirectoryName(Path.GetFullPath(Config.TempPath));
+                var to = Path.GetDirectoryName(Path.GetFullPath(Config.OutputPath));
+                to = Path.Combine(to, Path.GetFileNameWithoutExtension(Config.OutputPath));
+
+                foreach (var file in Directory.EnumerateFiles(path, "temp*"))
+                    File.Move(file, $"{to}{Path.GetExtension(file)}", true);
+            }
 
             Log($"ROM patched successfully to '{Config.OutputPath}'!", ConsoleColor.Cyan);
             Console.WriteLine();
