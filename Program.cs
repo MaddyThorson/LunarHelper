@@ -20,7 +20,8 @@ namespace SMWPatcher
             {
                 Log("Welcome to Lunar Helper ^_^", ConsoleColor.Cyan);
                 Log("B - Build, T - Build and Test, R - Test Only");
-                Log("O - Copy Output to Overworld, P - Package, ESC - Exit");
+                Log("S - Export Overworld, GlobalExAnim, and Map16 from built ROM");
+                Log("P - Package, ESC - Exit");
                 Console.WriteLine();
 
                 var key = Console.ReadKey(true);
@@ -42,9 +43,9 @@ namespace SMWPatcher
                             Test();
                         break;
 
-                    case ConsoleKey.O:
+                    case ConsoleKey.S:
                         if (Init())
-                            Overworld();
+                            Save();
                         break;
 
                     case ConsoleKey.P:
@@ -59,7 +60,11 @@ namespace SMWPatcher
                         break;
 
                     default:
-                        Log("Key not recognized!!", ConsoleColor.Red);
+                        string str = char.ToUpperInvariant(key.KeyChar).ToString().Trim();
+                        if (str.Length > 0)
+                            Log($"Key '{str}' is not a recognized option!", ConsoleColor.Red);
+                        else
+                            Log($"Key is not a recognized option!", ConsoleColor.Red);
                         Console.WriteLine();
                         break;
                 }
@@ -222,6 +227,33 @@ namespace SMWPatcher
                 else
                 {
                     Log("Overworld Import Failure!", ConsoleColor.Red);
+                    return false;
+                }
+
+                Console.WriteLine();
+            }
+
+            // import global ex anim
+            Log("Global EX Animations", ConsoleColor.Cyan);
+            if (string.IsNullOrWhiteSpace(Config.OverworldPath))
+                Log("No path to GlobalExAnim ROM provided, no GlobalExAnim will be imported.", ConsoleColor.Red);
+            else if (string.IsNullOrWhiteSpace(Config.LunarMagicPath))
+                Log("No path to Lunar Magic provided, no GlobalExAnim will be imported.", ConsoleColor.Red);
+            else if (!File.Exists(Config.LunarMagicPath))
+                Log("Lunar Magic not found at provided path, no GlobalExAnim will be imported.", ConsoleColor.Red);
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                ProcessStartInfo psi = new ProcessStartInfo(Config.LunarMagicPath,
+                            $"-TransferLevelGlobalExAnim {Config.TempPath} {Config.GlobalExAnimPath}");
+                var p = Process.Start(psi);
+                p.WaitForExit();
+
+                if (p.ExitCode == 0)
+                    Log("GlobalExAnim Import Success!", ConsoleColor.Green);
+                else
+                {
+                    Log("GlobalExAnim Import Failure!", ConsoleColor.Red);
                     return false;
                 }
 
@@ -502,9 +534,11 @@ namespace SMWPatcher
             return true;
         }
 
-        static private bool Overworld()
+        static private void Save()
         {
-            Log("Copying Output ROM to Overworld Path", ConsoleColor.Cyan);
+            // overworld
+            bool owSaved = false;
+            Log("Copying Output ROM to Save Path", ConsoleColor.Cyan);
             if (string.IsNullOrWhiteSpace(Config.OverworldPath))
                 Log("No path to Overworld ROM provided! Copy failed.", ConsoleColor.Red);
             else if (!File.Exists(Config.OutputPath))
@@ -512,14 +546,52 @@ namespace SMWPatcher
             else
             {
                 File.Copy(Config.OutputPath, Config.OverworldPath, true);
+                Log("Overworld ROM overwritten with Output ROM", ConsoleColor.Green);
+                owSaved = true;
+            }
 
-                Log("Overworld ROM overwritten with Output ROM!", ConsoleColor.Green);
-                Console.WriteLine();
-                return true;
+            // global ex anim
+            if (owSaved && Path.GetFullPath(Config.GlobalExAnimPath) == Path.GetFullPath(Config.OverworldPath))
+                Log("GlobalExAnim ROM path is the same as Overworld ROM path, so we are done.", ConsoleColor.Green);
+            else
+            {
+                Log("Copying Output ROM to GlobalExAnim Path", ConsoleColor.Cyan);
+                if (string.IsNullOrWhiteSpace(Config.GlobalExAnimPath))
+                    Log("No path to Overworld ROM provided! Copy failed.", ConsoleColor.Red);
+                else if (!File.Exists(Config.OutputPath))
+                    Log("Output ROM does not exist! Copy failed. Build first!", ConsoleColor.Red);
+                else
+                {
+                    File.Copy(Config.OutputPath, Config.GlobalExAnimPath, true);
+                    Log("GlobalExAnim ROM overwritten with Output ROM", ConsoleColor.Green);
+                }
+            }
+
+            // all map16
+            Log("Exporting Map16", ConsoleColor.Cyan);
+            if (string.IsNullOrWhiteSpace(Config.Map16Path))
+                Log("No path to Map16 provided! Export failed.", ConsoleColor.Red);
+            else if (string.IsNullOrWhiteSpace(Config.LunarMagicPath))
+                Log("No path to Lunar Magic provided! Export failed.", ConsoleColor.Red);
+            else if (!File.Exists(Config.LunarMagicPath))
+                Log("Lunar Magic not found at the specified path! Export failed.", ConsoleColor.Red);
+            else if (!File.Exists(Config.OutputPath))
+                Log("Output ROM does not exist! Export failed. Build first!", ConsoleColor.Red);
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                ProcessStartInfo psi = new ProcessStartInfo(Config.LunarMagicPath,
+                            $"-ExportAllMap16 {Config.OutputPath} {Config.Map16Path}");
+                var p = Process.Start(psi);
+                p.WaitForExit();
+
+                if (p.ExitCode == 0)
+                    Log("Map16 exported from Output ROM", ConsoleColor.Green);
+                else
+                    Log("Map16 export failed!", ConsoleColor.Red);
             }
 
             Console.WriteLine();
-            return false;
         }
 
         static private bool Package()

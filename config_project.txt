@@ -11,6 +11,10 @@ patches
 	Patches\walljumpnoteblockglitchfix.asm
 	Patches\VWF Level Intros 1.22\vwfintro.asm
 	Patches\GoalTapeGG.asm
+	Patches\VertWrapPrep.asm
+	Patches\vertCam\BetterVertCamera.asm
+	Patches\FindPlatformSprite.asm
+	Patches\asarspritetiles.asm
 ]
 
 -- tools
@@ -24,3 +28,4 @@ levels = Levels
 shared_palette = Other/shared.pal
 map16 = Other/all.map16
 overworld = Other/overworld.smc
+global_ex_anim = Other/exanim.smc
