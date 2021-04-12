@@ -20,7 +20,8 @@ namespace SMWPatcher
             {
                 Log("Welcome to Lunar Helper ^_^", ConsoleColor.Cyan);
                 Log("B - Build, T - Build and Test, R - Test Only");
-                Log("S - Export Overworld and GlobalExAnim from built ROM");
+                Log("L - Build and Open in Lunar Magic");
+                Log("S - Overwrite Overworld and GlobalExAnim with built ROM");
                 Log("P - Package, ESC - Exit");
                 Console.WriteLine();
 
@@ -46,6 +47,11 @@ namespace SMWPatcher
                     case ConsoleKey.S:
                         if (Init())
                             Save();
+                        break;
+
+                    case ConsoleKey.L:
+                        if (Init() && Build())
+                            Open();
                         break;
 
                     case ConsoleKey.P:
@@ -568,6 +574,20 @@ namespace SMWPatcher
             }
 
             Console.WriteLine();
+        }
+
+        static private void Open()
+        {
+            if (string.IsNullOrWhiteSpace(Config.LunarMagicPath))
+                Log("No path to Lunar Magic provided, cannot open built ROM.", ConsoleColor.Red);
+            else if (!File.Exists(Config.LunarMagicPath))
+                Log("Lunar Magic not found at provided path, cannot open built ROM.", ConsoleColor.Red);
+            else
+            {
+                ProcessStartInfo psi = new ProcessStartInfo(Config.LunarMagicPath,
+                            $"{Config.OutputPath}");
+                Process.Start(psi);
+            }
         }
 
         static private bool Package()

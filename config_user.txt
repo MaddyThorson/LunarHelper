@@ -4,7 +4,7 @@ dir = C:/Users/mattm/Documents/Projects/ROMHacks/Hack2
 -- rom paths
 -- input rom should be saved with LM at least once to apply VRAM patch, or pixi will fail
 -- clean rom is only used for creating release IPS patch
-input = ../SMW_input.smc
+input = SMW_input.smc
 output = hack.smc
 temp = temp.smc
 clean = ../SMW_clean.smc
