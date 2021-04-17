@@ -20,10 +20,8 @@ namespace SMWPatcher
             {
                 Log("Welcome to Lunar Helper ^_^", ConsoleColor.Cyan);
                 Log("B - Build, T - Build and Test, R - Test Only");
-                Log("M - Open built ROM in Lunar Magic");
-                Log("L - Re-insert Levels only, and Test");
-                Log("S - Save Global Data BPS from built ROM");
-                Log("P - Package, ESC - Exit");
+                Log("Q - Quick Level Test, L - Lunar Magic, S - Save Global Data");
+                Log("P - Package, H - Help, ESC - Exit");
                 Console.WriteLine();
 
                 var key = Console.ReadKey(true);
@@ -45,24 +43,28 @@ namespace SMWPatcher
                             Test();
                         break;
 
+                    case ConsoleKey.Q:
+                        if (Init() && Levels(true))
+                            Test();
+                        break;
+
+                    case ConsoleKey.L:
+                        if (Init())
+                            Open();
+                        break;
+
                     case ConsoleKey.S:
                         if (Init())
                             Save();
                         break;
 
-                    case ConsoleKey.L:
-                        if (Init() && Levels(true))
-                            Test();
-                        break;
-
-                    case ConsoleKey.M:
-                        if (Init())
-                            Open();
-                        break;
-
                     case ConsoleKey.P:
                         if (Init() && Build())
                             Package();
+                        break;
+
+                    case ConsoleKey.H:
+                        Help();
                         break;
 
                     case ConsoleKey.Escape:
@@ -730,6 +732,31 @@ namespace SMWPatcher
             Console.WriteLine();
 
             return true;
+        }
+
+        static private void Help()
+        {
+            Log("Function list:", ConsoleColor.Magenta);
+            Log("B - Build", ConsoleColor.Yellow);
+            Log("Creates your ROM from scratch, using your provided clean SMW ROM as a base and inserting all the configured patches, graphics, levels, etc.\n");
+
+            Log("T - Build and Test", ConsoleColor.Yellow);
+            Log("Executes build, and then immediately loads the built ROM into the configured emulator for testing.\n");
+
+            Log("R - Run", ConsoleColor.Yellow);
+            Log("Loads the previously-built ROM into the configured emulator for testing. The ROM must already be built first.\n");
+
+            Log("Q - Quick Level Test", ConsoleColor.Yellow);
+            Log("Re-inserts levels into the previously-built ROM, but skips all of the other build steps, then immediately loads the ROM into the configured emulator for testing. This is useful for quickly testing level design iterations, when nothing else has changed. The ROM must already be built first.\n");
+
+            Log("L - Lunar Magic", ConsoleColor.Yellow);
+            Log("Opens the previously-built ROM in Lunar Magic. The ROM must already be built first.\n");
+
+            Log("S - Save Global Data", ConsoleColor.Yellow);
+            Log("Exports all global data (overworld, ex global animations, credits, and title screen) from the previously-built ROM, and creates a BPS patch to store them, at the configured location. This BPS patch will be used in future builds, so be sure to use this function after changing any global data in the built ROM. The ROM must already be built first.\n");
+
+            Log("P - Package", ConsoleColor.Yellow);
+            Log("Creates a BPS patch for your ROM against the configure clean SMW ROM, so that you can share it!\n");
         }
 
         static private void Error(string error)
