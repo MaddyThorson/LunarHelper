@@ -20,7 +20,8 @@ namespace SMWPatcher
             {
                 Log("Welcome to Lunar Helper ^_^", ConsoleColor.Cyan);
                 Log("B - Build, T - Build and Test, R - Test Only");
-                Log("L - Open built ROM in Lunar Magic");
+                Log("M - Open built ROM in Lunar Magic");
+                Log("L - Re-insert Levels only, and Test");
                 Log("S - Save Global Data BPS from built ROM");
                 Log("P - Package, ESC - Exit");
                 Console.WriteLine();
@@ -50,6 +51,11 @@ namespace SMWPatcher
                         break;
 
                     case ConsoleKey.L:
+                        if (Init() && Levels(true))
+                            Test();
+                        break;
+
+                    case ConsoleKey.M:
                         if (Init())
                             Open();
                         break;
@@ -170,7 +176,7 @@ namespace SMWPatcher
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 ProcessStartInfo psi = new ProcessStartInfo(Config.LunarMagicPath,
-                            $"-ImportAllGraphics {Config.TempPath}");
+                            $"-ImportAllGraphics \"{Config.TempPath}\"");
                 var p = Process.Start(psi);
                 p.WaitForExit();
 
@@ -201,7 +207,7 @@ namespace SMWPatcher
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 ProcessStartInfo psi = new ProcessStartInfo(Config.LunarMagicPath,
-                            $"-ImportAllMap16 {Config.TempPath} {Config.Map16Path}");
+                            $"-ImportAllMap16 \"{Config.TempPath}\" \"{Config.Map16Path}\"");
                 var p = Process.Start(psi);
                 p.WaitForExit();
 
@@ -224,7 +230,7 @@ namespace SMWPatcher
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 ProcessStartInfo psi = new ProcessStartInfo(Config.LunarMagicPath,
-                            $"-ImportSharedPalette {Config.TempPath} {Config.SharedPalettePath}");
+                            $"-ImportSharedPalette \"{Config.TempPath}\" \"{Config.SharedPalettePath}\"");
                 var p = Process.Start(psi);
                 p.WaitForExit();
 
@@ -277,7 +283,7 @@ namespace SMWPatcher
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;
                     psi = new ProcessStartInfo(Config.LunarMagicPath,
-                                $"-TransferOverworld {Config.TempPath} {globalDataROMPath}");
+                                $"-TransferOverworld \"{Config.TempPath}\" \"{globalDataROMPath}\"");
                     p = Process.Start(psi);
                     p.WaitForExit();
 
@@ -294,7 +300,7 @@ namespace SMWPatcher
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;
                     psi = new ProcessStartInfo(Config.LunarMagicPath,
-                                $"-TransferLevelGlobalExAnim {Config.TempPath} {globalDataROMPath}");
+                                $"-TransferLevelGlobalExAnim \"{Config.TempPath}\" \"{globalDataROMPath}\"");
                     p = Process.Start(psi);
                     p.WaitForExit();
 
@@ -311,7 +317,7 @@ namespace SMWPatcher
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;
                     psi = new ProcessStartInfo(Config.LunarMagicPath,
-                                $"-TransferTitleScreen {Config.TempPath} {globalDataROMPath}");
+                                $"-TransferTitleScreen \"{Config.TempPath}\" \"{globalDataROMPath}\"");
                     p = Process.Start(psi);
                     p.WaitForExit();
 
@@ -328,7 +334,7 @@ namespace SMWPatcher
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;
                     psi = new ProcessStartInfo(Config.LunarMagicPath,
-                                $"-TransferCredits {Config.TempPath} {globalDataROMPath}");
+                                $"-TransferCredits \"{Config.TempPath}\" \"{globalDataROMPath}\"");
                     p = Process.Start(psi);
                     p.WaitForExit();
 
@@ -516,30 +522,8 @@ namespace SMWPatcher
             }
 
             // import levels
-            Log("Levels", ConsoleColor.Cyan);
-            if (string.IsNullOrWhiteSpace(Config.LevelsPath))
-                Log("No path to Levels provided, no levels will be imported.", ConsoleColor.Red);
-            else
-            {
-                // import levels
-                {
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    ProcessStartInfo psi = new ProcessStartInfo(Config.LunarMagicPath,
-                                $"-ImportMultLevels {Config.TempPath} {Config.LevelsPath}");
-                    var p = Process.Start(psi);
-                    p.WaitForExit();
-
-                    if (p.ExitCode == 0)
-                        Log("Levels Import Success!", ConsoleColor.Green);
-                    else
-                    {
-                        Log("Levels Import Failure!", ConsoleColor.Red);
-                        return false;
-                    }
-
-                    Console.WriteLine();
-                }
-            }
+            if (!Levels(false))
+                return false;
 
             // output final ROM
             File.Copy(Config.TempPath, Config.OutputPath, true);
@@ -584,7 +568,7 @@ namespace SMWPatcher
 
                     Console.ForegroundColor = ConsoleColor.Yellow;
                     ProcessStartInfo psi = new ProcessStartInfo(Config.LunarMagicPath,
-                        $"-ImportLevel {Config.OutputPath} \"{path}\" {Config.TestLevelDest}");
+                        $"-ImportLevel \"{Config.OutputPath}\" \"{path}\" {Config.TestLevelDest}");
                     var p = Process.Start(psi);
                     p.WaitForExit();
 
@@ -656,6 +640,40 @@ namespace SMWPatcher
             Console.WriteLine();
         }
 
+        static private bool Levels(bool reinsert)
+        {
+            var romPath = (reinsert ? Config.OutputPath : Config.TempPath);
+
+            Log("Levels", ConsoleColor.Cyan);
+            if (reinsert && !File.Exists(romPath))
+                Log("Output ROM does not exist! Build first.", ConsoleColor.Red);
+            else if (string.IsNullOrWhiteSpace(Config.LevelsPath))
+                Log("No path to Levels provided, no levels will be imported.", ConsoleColor.Red);
+            else
+            {
+                // import levels
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    ProcessStartInfo psi = new ProcessStartInfo(Config.LunarMagicPath,
+                                $"-ImportMultLevels \"{romPath}\" \"{Config.LevelsPath}\"");
+                    var p = Process.Start(psi);
+                    p.WaitForExit();
+
+                    if (p.ExitCode == 0)
+                        Log("Levels Import Success!", ConsoleColor.Green);
+                    else
+                    {
+                        Log("Levels Import Failure!", ConsoleColor.Red);
+                        return false;
+                    }
+
+                    Console.WriteLine();
+                }
+            }
+
+            return true;
+        }
+
         static private void Open()
         {
             if (!File.Exists(Config.OutputPath))
@@ -667,7 +685,7 @@ namespace SMWPatcher
             else
             {
                 ProcessStartInfo psi = new ProcessStartInfo(Config.LunarMagicPath,
-                            $"{Config.OutputPath}");
+                            $"\"{Config.OutputPath}\"");
                 Process.Start(psi);
             }
         }
