@@ -21,7 +21,7 @@ namespace SMWPatcher
                 Log("Welcome to Lunar Helper ^_^", ConsoleColor.Cyan);
                 Log("B - Build, T - Build and Test, R - Test Only");
                 Log("L - Open built ROM in Lunar Magic");
-                Log("S - Overwrite Overworld and GlobalExAnim ROMs with built ROM");
+                Log("S - Save Global Data BPS from built ROM");
                 Log("P - Package, ESC - Exit");
                 Console.WriteLine();
 
@@ -212,57 +212,114 @@ namespace SMWPatcher
                 Console.WriteLine();
             }
 
-            // import overworld
-            Log("Overworld", ConsoleColor.Cyan);
-            if (string.IsNullOrWhiteSpace(Config.OverworldPath))
-                Log("No path to Overworld ROM provided, no overworld will be imported.", ConsoleColor.Red);
+            // import global data
+            Log("Global Data", ConsoleColor.Cyan);
+            if (string.IsNullOrWhiteSpace(Config.GlobalDataPath))
+                Log("No path to Global Data BPS provided, no global data will be imported.", ConsoleColor.Red);
             else if (string.IsNullOrWhiteSpace(Config.LunarMagicPath))
-                Log("No path to Lunar Magic provided, no overworld will be imported.", ConsoleColor.Red);
+                Log("No path to Lunar Magic provided, no global data will be imported.", ConsoleColor.Red);
             else if (!File.Exists(Config.LunarMagicPath))
-                Log("Lunar Magic not found at provided path, no overworld will be imported.", ConsoleColor.Red);
+                Log("Lunar Magic not found at provided path, no global data will be imported.", ConsoleColor.Red);
             else
             {
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                ProcessStartInfo psi = new ProcessStartInfo(Config.LunarMagicPath,
-                            $"-TransferOverworld {Config.TempPath} {Config.OverworldPath}");
-                var p = Process.Start(psi);
-                p.WaitForExit();
+                ProcessStartInfo psi;
+                Process p;
+                string globalDataROMPath = Path.Combine(
+                    Path.GetFullPath(Path.GetDirectoryName(Config.GlobalDataPath)), 
+                    Path.GetFileNameWithoutExtension(Config.GlobalDataPath) + ".smc");
 
-                if (p.ExitCode == 0)
-                    Log("Overworld Import Success!", ConsoleColor.Green);
-                else
+                //Apply patch to clean ROM
                 {
-                    Log("Overworld Import Failure!", ConsoleColor.Red);
-                    return false;
+                    var fullPatchPath = Path.GetFullPath(Config.GlobalDataPath);
+                    var fullCleanPath = Path.GetFullPath(Config.CleanPath);
+
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    psi = new ProcessStartInfo(Config.FlipsPath,
+                            $"--apply \"{fullPatchPath}\" \"{fullCleanPath}\" \"{globalDataROMPath}\"");
+                    p = Process.Start(psi);
+                    p.WaitForExit();
+
+                    if (p.ExitCode == 0)
+                        Log("Global Data Patch Apply Success!", ConsoleColor.Green);
+                    else
+                    {
+                        Log("Global Data Patch Apply Failure!", ConsoleColor.Red);
+                        return false;
+                    }
                 }
 
-                Console.WriteLine();
-            }
-
-            // import global ex anim
-            Log("Global EX Animations", ConsoleColor.Cyan);
-            if (string.IsNullOrWhiteSpace(Config.OverworldPath))
-                Log("No path to GlobalExAnim ROM provided, no GlobalExAnim will be imported.", ConsoleColor.Red);
-            else if (string.IsNullOrWhiteSpace(Config.LunarMagicPath))
-                Log("No path to Lunar Magic provided, no GlobalExAnim will be imported.", ConsoleColor.Red);
-            else if (!File.Exists(Config.LunarMagicPath))
-                Log("Lunar Magic not found at provided path, no GlobalExAnim will be imported.", ConsoleColor.Red);
-            else
-            {
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                ProcessStartInfo psi = new ProcessStartInfo(Config.LunarMagicPath,
-                            $"-TransferLevelGlobalExAnim {Config.TempPath} {Config.GlobalExAnimPath}");
-                var p = Process.Start(psi);
-                p.WaitForExit();
-
-                if (p.ExitCode == 0)
-                    Log("GlobalExAnim Import Success!", ConsoleColor.Green);
-                else
+                //Overworld
                 {
-                    Log("GlobalExAnim Import Failure!", ConsoleColor.Red);
-                    return false;
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    psi = new ProcessStartInfo(Config.LunarMagicPath,
+                                $"-TransferOverworld {Config.TempPath} {globalDataROMPath}");
+                    p = Process.Start(psi);
+                    p.WaitForExit();
+
+                    if (p.ExitCode == 0)
+                        Log("Overworld Import Success!", ConsoleColor.Green);
+                    else
+                    {
+                        Log("Overworld Import Failure!", ConsoleColor.Red);
+                        return false;
+                    }
                 }
 
+                //Global EX Animations
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    psi = new ProcessStartInfo(Config.LunarMagicPath,
+                                $"-TransferLevelGlobalExAnim {Config.TempPath} {globalDataROMPath}");
+                    p = Process.Start(psi);
+                    p.WaitForExit();
+
+                    if (p.ExitCode == 0)
+                        Log("Global EX Animation Import Success!", ConsoleColor.Green);
+                    else
+                    {
+                        Log("Global EX Animation Import Failure!", ConsoleColor.Red);
+                        return false;
+                    }
+                }
+
+                //Title Screen
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    psi = new ProcessStartInfo(Config.LunarMagicPath,
+                                $"-TransferTitleScreen {Config.TempPath} {globalDataROMPath}");
+                    p = Process.Start(psi);
+                    p.WaitForExit();
+
+                    if (p.ExitCode == 0)
+                        Log("Title Screen Import Success!", ConsoleColor.Green);
+                    else
+                    {
+                        Log("Title Screen Import Failure!", ConsoleColor.Red);
+                        return false;
+                    }
+                }
+
+                //Credits
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    psi = new ProcessStartInfo(Config.LunarMagicPath,
+                                $"-TransferCredits {Config.TempPath} {globalDataROMPath}");
+                    p = Process.Start(psi);
+                    p.WaitForExit();
+
+                    if (p.ExitCode == 0)
+                        Log("Credits Import Success!", ConsoleColor.Green);
+                    else
+                    {
+                        Log("Credits Import Failure!", ConsoleColor.Red);
+                        return false;
+                    }
+                }
+
+                if (File.Exists(globalDataROMPath))
+                    File.Delete(globalDataROMPath);
+
+                Log("All Global Data Imported!", ConsoleColor.Green);
                 Console.WriteLine();
             }
 
@@ -542,35 +599,37 @@ namespace SMWPatcher
 
         static private void Save()
         {
-            // overworld
-            bool owSaved = false;
-            Log("Copying Output ROM to Save Path", ConsoleColor.Cyan);
-            if (string.IsNullOrWhiteSpace(Config.OverworldPath))
-                Log("No path to Overworld ROM provided! Copy failed.", ConsoleColor.Red);
+            Log("Saving Global Data BPS...", ConsoleColor.Cyan);
+            if (string.IsNullOrWhiteSpace(Config.GlobalDataPath))
+                Log("No path for GlobalData BPS provided! Save failed.", ConsoleColor.Red);
+            else if (string.IsNullOrWhiteSpace(Config.CleanPath))
+                Log("No path for Clean ROM provided! Save failed.", ConsoleColor.Red);
+            else if (!File.Exists(Config.CleanPath))
+                Log("Clean ROM does not exist! Save failed.", ConsoleColor.Red);
+            else if (string.IsNullOrWhiteSpace(Config.FlipsPath))
+                Log("No path to Flips provided! Save failed.", ConsoleColor.Red);
+            else if (!File.Exists(Config.FlipsPath))
+                Log("Flips not found at the provided path! Save failed.", ConsoleColor.Red);
             else if (!File.Exists(Config.OutputPath))
-                Log("Output ROM does not exist! Copy failed. Build first!", ConsoleColor.Red);
+                Log("Output ROM does not exist! Save failed. Build first!", ConsoleColor.Red);
             else
             {
-                File.Copy(Config.OutputPath, Config.OverworldPath, true);
-                Log("Overworld ROM overwritten with Output ROM", ConsoleColor.Green);
-                owSaved = true;
-            }
+                if (File.Exists(Config.GlobalDataPath))
+                    File.Delete(Config.GlobalDataPath);
 
-            // global ex anim
-            if (owSaved && Path.GetFullPath(Config.GlobalExAnimPath) == Path.GetFullPath(Config.OverworldPath))
-                Log("GlobalExAnim ROM path is the same as Overworld ROM path, so we are done.", ConsoleColor.Green);
-            else
-            {
-                Log("Copying Output ROM to GlobalExAnim Path", ConsoleColor.Cyan);
-                if (string.IsNullOrWhiteSpace(Config.GlobalExAnimPath))
-                    Log("No path to Overworld ROM provided! Copy failed.", ConsoleColor.Red);
-                else if (!File.Exists(Config.OutputPath))
-                    Log("Output ROM does not exist! Copy failed. Build first!", ConsoleColor.Red);
+                var fullCleanPath = Path.GetFullPath(Config.CleanPath);
+                var fullOutputPath = Path.GetFullPath(Config.OutputPath);
+                var fullPackagePath = Path.GetFullPath(Config.GlobalDataPath);
+
+                ProcessStartInfo psi = new ProcessStartInfo(Config.FlipsPath,
+                        $"--create --bps-delta \"{fullCleanPath}\" \"{fullOutputPath}\" \"{fullPackagePath}\"");
+                var p = Process.Start(psi);
+                p.WaitForExit();
+
+                if (p.ExitCode == 0)
+                    Log("Patch Creation Success!", ConsoleColor.Green);
                 else
-                {
-                    File.Copy(Config.OutputPath, Config.GlobalExAnimPath, true);
-                    Log("GlobalExAnim ROM overwritten with Output ROM", ConsoleColor.Green);
-                }
+                    Log("Patch Creation Failure!", ConsoleColor.Red);
             }
 
             Console.WriteLine();

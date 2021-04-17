@@ -13,7 +13,7 @@ package = hack.bps
 -- tools
 asar_path = ../Tools/asar181/asar.exe
 lm_path = ../Tools/Lunar Magic 3.2.1/Lunar Magic.exe
-flips_path = ../Tools/flips.exe
+flips_path = ../Tools/FLIPS/flips.exe
 
 -- emulator and testing
 retroarch_path = C:\Users\mattm\AppData\Roaming\RetroArch\retroarch.exe
