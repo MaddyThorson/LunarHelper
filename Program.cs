@@ -94,14 +94,14 @@ namespace SMWPatcher
                 Directory.SetCurrentDirectory(Config.WorkingDirectory);
 
             // some error checks
-            if (string.IsNullOrWhiteSpace(Config.InputPath))
+            if (string.IsNullOrWhiteSpace(Config.CleanPath))
             {
-                Error("No Input ROM path provided!");
+                Error("No Clean ROM path provided!");
                 return false;
             }
-            else if (!File.Exists(Config.InputPath))
+            else if (!File.Exists(Config.CleanPath))
             {
-                Error($"Input ROM file '{Config.InputPath}' does not exist!");
+                Error($"Clean ROM file '{Config.CleanPath}' does not exist!");
                 return false;
             }
             else if (string.IsNullOrWhiteSpace(Config.OutputPath))
@@ -120,18 +120,53 @@ namespace SMWPatcher
 
         static private bool Build()
         {
-            // create temp ROM to operate on, in case something goes wrong
+            // Lunar Magic required
+            if (string.IsNullOrWhiteSpace(Config.LunarMagicPath))
+            {
+                Log("No path to Lunar Magic provided!", ConsoleColor.Red);
+                return false;
+            }
+            else if (!File.Exists(Config.LunarMagicPath))
+            {
+                Log("Lunar Magic not found at provided path!", ConsoleColor.Red);
+                return false;
+            }
+
+            // delete existing temp ROM
             if (File.Exists(Config.TempPath))
                 File.Delete(Config.TempPath);
-            File.Copy(Config.InputPath, Config.TempPath);
+
+            // vram patch
+            if (!string.IsNullOrWhiteSpace(Config.InitialPatch))
+            {
+                Log("Initial Patch", ConsoleColor.Cyan);
+                {
+                    var fullPatchPath = Path.GetFullPath(Config.GlobalDataPath);
+                    var fullCleanPath = Path.GetFullPath(Config.CleanPath);
+                    var fullTempPath = Path.GetFullPath(Config.TempPath);
+
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    var psi = new ProcessStartInfo(Config.FlipsPath,
+                            $"--apply \"{fullPatchPath}\" \"{fullCleanPath}\" \"{fullTempPath}\"");
+                    var p = Process.Start(psi);
+                    p.WaitForExit();
+
+                    if (p.ExitCode == 0)
+                        Log("Initial Patch Success!", ConsoleColor.Green);
+                    else
+                    {
+                        Log("Initial Patch Failure!", ConsoleColor.Red);
+                        return false;
+                    }
+                }
+            }
+            else
+            {
+                File.Copy(Config.CleanPath, Config.TempPath);
+            }
 
             // import gfx
             Log("Graphics", ConsoleColor.Cyan);
-            if (string.IsNullOrWhiteSpace(Config.LunarMagicPath))
-                Log("No path to Lunar Magic provided, no graphics will be imported.", ConsoleColor.Red);
-            else if (!File.Exists(Config.LunarMagicPath))
-                Log("Lunar Magic not found at provided path, no graphics will be imported.", ConsoleColor.Red);
-            else
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 ProcessStartInfo psi = new ProcessStartInfo(Config.LunarMagicPath,
@@ -162,10 +197,6 @@ namespace SMWPatcher
             Log("Map16", ConsoleColor.Cyan);
             if (string.IsNullOrWhiteSpace(Config.Map16Path))
                 Log("No path to Map16 provided, no map16 will be imported.", ConsoleColor.Red);
-            else if (string.IsNullOrWhiteSpace(Config.LunarMagicPath))
-                Log("No path to Lunar Magic provided, no map16 will be imported.", ConsoleColor.Red);
-            else if (!File.Exists(Config.LunarMagicPath))
-                Log("Lunar Magic not found at provided path, no map16 will be imported.", ConsoleColor.Red);
             else
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
@@ -189,10 +220,6 @@ namespace SMWPatcher
             Log("Shared Palette", ConsoleColor.Cyan);
             if (string.IsNullOrWhiteSpace(Config.SharedPalettePath))
                 Log("No path to Shared Palette provided, no palette will be imported.", ConsoleColor.Red);
-            else if (string.IsNullOrWhiteSpace(Config.LunarMagicPath))
-                Log("No path to Lunar Magic provided, no palette will be imported.", ConsoleColor.Red);
-            else if (!File.Exists(Config.LunarMagicPath))
-                Log("Lunar Magic not found at provided path, no palette will be imported.", ConsoleColor.Red);
             else
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
@@ -216,10 +243,8 @@ namespace SMWPatcher
             Log("Global Data", ConsoleColor.Cyan);
             if (string.IsNullOrWhiteSpace(Config.GlobalDataPath))
                 Log("No path to Global Data BPS provided, no global data will be imported.", ConsoleColor.Red);
-            else if (string.IsNullOrWhiteSpace(Config.LunarMagicPath))
-                Log("No path to Lunar Magic provided, no global data will be imported.", ConsoleColor.Red);
-            else if (!File.Exists(Config.LunarMagicPath))
-                Log("Lunar Magic not found at provided path, no global data will be imported.", ConsoleColor.Red);
+            else if (!File.Exists(Config.GlobalDataPath))
+                Log("No path to Global Data BPS file found at the path provided, no global data will be imported.", ConsoleColor.Red);
             else
             {
                 ProcessStartInfo psi;
@@ -240,10 +265,10 @@ namespace SMWPatcher
                     p.WaitForExit();
 
                     if (p.ExitCode == 0)
-                        Log("Global Data Patch Apply Success!", ConsoleColor.Green);
+                        Log("Global Data Patch Success!", ConsoleColor.Green);
                     else
                     {
-                        Log("Global Data Patch Apply Failure!", ConsoleColor.Red);
+                        Log("Global Data Patch Failure!", ConsoleColor.Red);
                         return false;
                     }
                 }
@@ -494,10 +519,6 @@ namespace SMWPatcher
             Log("Levels", ConsoleColor.Cyan);
             if (string.IsNullOrWhiteSpace(Config.LevelsPath))
                 Log("No path to Levels provided, no levels will be imported.", ConsoleColor.Red);
-            else if (string.IsNullOrWhiteSpace(Config.LunarMagicPath))
-                Log("No path to Lunar Magic provided, no levels will be imported.", ConsoleColor.Red);
-            else if (!File.Exists(Config.LunarMagicPath))
-                Log("Lunar Magic not found at provided path, no levels will be imported.", ConsoleColor.Red);
             else
             {
                 // import levels

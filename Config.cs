@@ -10,7 +10,6 @@ namespace SMWPatcher
     {
         public string WorkingDirectory;
 
-        public string InputPath;
         public string OutputPath;
         public string TempPath;
         public string CleanPath;
@@ -24,6 +23,7 @@ namespace SMWPatcher
         public string LunarMagicPath;
         public string FlipsPath;
 
+        public string InitialPatch;
         public string LevelsPath;
         public string Map16Path;
         public string SharedPalettePath;
@@ -64,7 +64,6 @@ namespace SMWPatcher
                 Parse(d, flags, vars, lists);
 
             vars.TryGetValue("dir", out config.WorkingDirectory);
-            vars.TryGetValue("input", out config.InputPath);
             vars.TryGetValue("output", out config.OutputPath);
             vars.TryGetValue("temp", out config.TempPath);
             vars.TryGetValue("clean", out config.CleanPath);
@@ -80,6 +79,7 @@ namespace SMWPatcher
             vars.TryGetValue("map16", out config.Map16Path);
             vars.TryGetValue("shared_palette", out config.SharedPalettePath);
             vars.TryGetValue("global_data", out config.GlobalDataPath);
+            vars.TryGetValue("initial_patch", out config.InitialPatch);
             lists.TryGetValue("patches", out config.Patches);
 
             vars.TryGetValue("test_level", out config.TestLevel);

@@ -1,14 +1,11 @@
 ﻿-- working directory (all paths are relative to this one)
-dir = C:/Users/mattm/Documents/Projects/ROMHacks/Hack2
+dir = C:/Users/user/Documents/my_hack
 
 -- rom paths
--- input rom should be saved with LM at least once to apply VRAM patch, or pixi will fail
--- clean rom is only used for creating release IPS patch
-input = SMW_input.smc
-output = hack.smc
-temp = temp.smc
 clean = ../SMW_clean.smc
-package = hack.bps
+output = my_hack.smc
+temp = temp.smc
+package = my_hack.bps
 
 -- tools
 asar_path = ../Tools/asar181/asar.exe
@@ -16,5 +13,5 @@ lm_path = ../Tools/Lunar Magic 3.2.1/Lunar Magic.exe
 flips_path = ../Tools/FLIPS/flips.exe
 
 -- emulator and testing
-retroarch_path = C:\Users\mattm\AppData\Roaming\RetroArch\retroarch.exe
-retroarch_core = C:\Users\mattm\AppData\Roaming\RetroArch\cores\snes9x_libretro.dll
+retroarch_path = C:\Users\user\AppData\Roaming\RetroArch\retroarch.exe
+retroarch_core = C:\Users\user\AppData\Roaming\RetroArch\cores\snes9x_libretro.dll
