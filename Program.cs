@@ -12,6 +12,7 @@ namespace SMWPatcher
 
         static private readonly Regex LevelRegex = new Regex("[0-9a-fA-F]{3}");
         static private Process RetroArchProcess;
+        static private Process LunarMagicProcess;
 
         static void Main(string[] args)
         {
@@ -686,9 +687,12 @@ namespace SMWPatcher
                 Log("Lunar Magic not found at provided path, cannot open built ROM.", ConsoleColor.Red);
             else
             {
+                if (LunarMagicProcess != null && !LunarMagicProcess.HasExited)
+                    LunarMagicProcess.Kill(true);
+
                 ProcessStartInfo psi = new ProcessStartInfo(Config.LunarMagicPath,
                             $"\"{Config.OutputPath}\"");
-                Process.Start(psi);
+                LunarMagicProcess = Process.Start(psi);
             }
         }
 
