@@ -153,7 +153,7 @@ namespace SMWPatcher
                 var fullPatchPath = Path.GetFullPath(Config.InitialPatch);
                 var fullCleanPath = Path.GetFullPath(Config.CleanPath);
                 var fullTempPath = Path.GetFullPath(Config.TempPath);
-                if (Patch(fullCleanPath, fullTempPath, fullPatchPath))
+                if (ApplyPatch(fullCleanPath, fullTempPath, fullPatchPath))
                     Log("Initial Patch Success!", ConsoleColor.Green);
                 else
                 {
@@ -618,7 +618,7 @@ namespace SMWPatcher
                 var fullCleanPath = Path.GetFullPath(Config.CleanPath);
                 var fullOutputPath = Path.GetFullPath(Config.OutputPath);
                 var fullPackagePath = Path.GetFullPath(Config.GlobalDataPath);
-                if (Patch(fullCleanPath, fullOutputPath, fullPackagePath))
+                if (CreatePatch(fullCleanPath, fullOutputPath, fullPackagePath))
                     Log("Patch Creation Success!", ConsoleColor.Green);
                 else
                     Log("Patch Creation Failure!", ConsoleColor.Red);
@@ -703,7 +703,7 @@ namespace SMWPatcher
                 var fullOutputPath = Path.GetFullPath(Config.OutputPath);
                 var fullPackagePath = Path.GetFullPath(Config.PackagePath);
 
-                if (Patch(fullCleanPath, fullOutputPath, fullPackagePath))
+                if (CreatePatch(fullCleanPath, fullOutputPath, fullPackagePath))
                     Log("Packaging Success!", ConsoleColor.Green);
                 else
                 {
@@ -742,17 +742,29 @@ namespace SMWPatcher
             Log("Creates a BPS patch for your ROM against the configure clean SMW ROM, so that you can share it!\n");
         }
 
-        static private bool Patch(string cleanROM, string outROM, string patchBPS)
+        static private bool ApplyPatch(string cleanROM, string outROM, string patchBPS)
         {
-            var fullPatchPath = Path.GetFullPath(Config.InitialPatch);
-            var fullCleanPath = Path.GetFullPath(Config.CleanPath);
-            var fullTempPath = Path.GetFullPath(Config.TempPath);
-
             Log($"Patching {cleanROM}\n\tto {outROM}\n\twith {patchBPS}", ConsoleColor.Yellow);
 
             Console.ForegroundColor = ConsoleColor.Yellow;
             var psi = new ProcessStartInfo(Config.FlipsPath,
                     $"--apply \"{patchBPS}\" \"{cleanROM}\" \"{outROM}\"");
+            var p = Process.Start(psi);
+            p.WaitForExit();
+
+            if (p.ExitCode == 0)
+                return true;
+            else
+                return false;
+        }
+
+        static private bool CreatePatch(string cleanROM, string hackROM, string outputBPS)
+        {
+            Log($"Creating Patch {outputBPS}\n\twith {hackROM}\n\tover {cleanROM}", ConsoleColor.Yellow);
+
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            var psi = new ProcessStartInfo(Config.FlipsPath,
+                    $"--create --bps-delta \"{cleanROM}\" \"{hackROM}\" \"{outputBPS}\"");
             var p = Process.Start(psi);
             p.WaitForExit();
 
