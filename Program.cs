@@ -703,16 +703,11 @@ namespace SMWPatcher
                 var fullOutputPath = Path.GetFullPath(Config.OutputPath);
                 var fullPackagePath = Path.GetFullPath(Config.PackagePath);
 
-                ProcessStartInfo psi = new ProcessStartInfo(Config.FlipsPath,
-                        $"--create --bps-delta \"{fullCleanPath}\" \"{fullOutputPath}\" \"{fullPackagePath}\"");
-                var p = Process.Start(psi);
-                p.WaitForExit();
-
-                if (p.ExitCode == 0)
-                    Log("Patch Creation Success!", ConsoleColor.Green);
+                if (Patch(fullCleanPath, fullOutputPath, fullPackagePath))
+                    Log("Packaging Success!", ConsoleColor.Green);
                 else
                 {
-                    Log("Patch Creation Failure!", ConsoleColor.Red);
+                    Log("Packaging Failure!", ConsoleColor.Red);
                     return false;
                 }
             }
