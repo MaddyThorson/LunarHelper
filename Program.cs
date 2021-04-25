@@ -145,33 +145,190 @@ namespace SMWPatcher
             if (File.Exists(Config.TempPath))
                 File.Delete(Config.TempPath);
 
-            // vram patch
+            // initial patch
             if (!string.IsNullOrWhiteSpace(Config.InitialPatch))
             {
                 Log("Initial Patch", ConsoleColor.Cyan);
+
+                var fullPatchPath = Path.GetFullPath(Config.InitialPatch);
+                var fullCleanPath = Path.GetFullPath(Config.CleanPath);
+                var fullTempPath = Path.GetFullPath(Config.TempPath);
+                if (Patch(fullCleanPath, fullTempPath, fullPatchPath))
+                    Log("Initial Patch Success!", ConsoleColor.Green);
+                else
                 {
-                    var fullPatchPath = Path.GetFullPath(Config.GlobalDataPath);
-                    var fullCleanPath = Path.GetFullPath(Config.CleanPath);
-                    var fullTempPath = Path.GetFullPath(Config.TempPath);
-
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    var psi = new ProcessStartInfo(Config.FlipsPath,
-                            $"--apply \"{fullPatchPath}\" \"{fullCleanPath}\" \"{fullTempPath}\"");
-                    var p = Process.Start(psi);
-                    p.WaitForExit();
-
-                    if (p.ExitCode == 0)
-                        Log("Initial Patch Success!", ConsoleColor.Green);
-                    else
-                    {
-                        Log("Initial Patch Failure!", ConsoleColor.Red);
-                        return false;
-                    }
+                    Log("Initial Patch Failure!", ConsoleColor.Red);
+                    return false;
                 }
+
+                Console.WriteLine();
             }
             else
             {
                 File.Copy(Config.CleanPath, Config.TempPath);
+            }
+
+            // run GPS
+            Log("GPS", ConsoleColor.Cyan);
+            if (string.IsNullOrWhiteSpace(Config.GPSPath))
+                Log("No path to GPS provided, no blocks will be inserted.", ConsoleColor.Red);
+            else if (!File.Exists(Config.GPSPath))
+                Log("GPS not found at provided path, no blocks will be inserted.", ConsoleColor.Red);
+            else
+            {
+                var dir = Path.GetFullPath(Path.GetDirectoryName(Config.GPSPath));
+                var rom = Path.GetRelativePath(dir, Path.GetFullPath(Config.TempPath));
+                Console.ForegroundColor = ConsoleColor.Yellow;
+
+                ProcessStartInfo psi = new ProcessStartInfo(Config.GPSPath, $"-l \"{dir}/list.txt\" \"{rom}\"");
+                psi.RedirectStandardInput = true;
+                psi.RedirectStandardError = true;
+                psi.WorkingDirectory = dir;
+
+                var p = Process.Start(psi);
+                p.WaitForExit();
+
+                if (p.ExitCode == 0)
+                    Log("GPS Success!", ConsoleColor.Green);
+                else
+                {
+                    Log("GPS Failure!", ConsoleColor.Red);
+                    return false;
+                }
+
+                Console.WriteLine();
+            }
+
+            // run PIXI
+            Log("PIXI", ConsoleColor.Cyan);
+            if (string.IsNullOrWhiteSpace(Config.PixiPath))
+                Log("No path to Pixi provided, no sprites will be inserted.", ConsoleColor.Red);
+            else if (!File.Exists(Config.PixiPath))
+                Log("Pixi not found at provided path, no sprites will be inserted.", ConsoleColor.Red);
+            else
+            {
+                var dir = Path.GetFullPath(Path.GetDirectoryName(Config.PixiPath));
+                var list = Path.Combine(dir, "list.txt");
+                Console.ForegroundColor = ConsoleColor.Yellow;
+
+                ProcessStartInfo psi = new ProcessStartInfo(Config.PixiPath, $"-l \"{list}\" \"{Config.TempPath}\"");
+                psi.RedirectStandardInput = true;
+                psi.RedirectStandardError = true;
+
+                var p = Process.Start(psi);
+                while (!p.HasExited)
+                    p.StandardInput.Write('a');
+
+                if (p.ExitCode == 0)
+                    Log("Pixi Success!", ConsoleColor.Green);
+                else
+                {
+                    Log("Pixi Failure!", ConsoleColor.Red);
+                    Error(p.StandardOutput.ReadToEnd());
+                    return false;
+                }
+
+                Console.WriteLine();
+            }
+
+            // asar patches
+            Log("Patches", ConsoleColor.Cyan);
+            if (string.IsNullOrWhiteSpace(Config.AsarPath))
+                Log("No path to Asar provided, not applying any patches.", ConsoleColor.Red);
+            else if (!File.Exists(Config.AsarPath))
+                Log("Asar not found at provided path, not applying any patches.", ConsoleColor.Red);
+            else if (Config.Patches.Count == 0)
+                Log("Path to Asar provided, but no patches were registerd to be applied.", ConsoleColor.Red);
+            else
+            {
+                foreach (var patch in Config.Patches)
+                {
+                    Lognl($"- Applying patch '{patch}'...  ", ConsoleColor.Yellow);
+
+                    ProcessStartInfo psi = new ProcessStartInfo(Config.AsarPath, $"\"{patch}\" \"{Config.TempPath}\"");
+                    psi.RedirectStandardOutput = true;
+                    psi.RedirectStandardError = true;
+
+                    var p = Process.Start(psi);
+                    p.WaitForExit();
+
+                    if (p.ExitCode == 0)
+                        Log("Success!", ConsoleColor.Green);
+                    else
+                    {
+                        Log("Failure!", ConsoleColor.Red);
+                        Error(p.StandardError.ReadToEnd());
+                        return false;
+                    }
+                }
+
+                Log("Patching Success!", ConsoleColor.Green);
+                Console.WriteLine();
+            }
+
+            // uber ASM
+            Log("Uber ASM", ConsoleColor.Cyan);
+            if (string.IsNullOrWhiteSpace(Config.UberASMPath))
+                Log("No path to UberASMTool provided, no UberASM will be inserted.", ConsoleColor.Red);
+            else if (!File.Exists(Config.UberASMPath))
+                Log("UberASMTool not found at provided path, no UberASM will be inserted.", ConsoleColor.Red);
+            else
+            {
+                var dir = Path.GetFullPath(Path.GetDirectoryName(Config.UberASMPath));
+                var rom = Path.GetRelativePath(dir, Path.GetFullPath(Config.TempPath));
+                Console.ForegroundColor = ConsoleColor.Yellow;
+
+                ProcessStartInfo psi = new ProcessStartInfo(Config.UberASMPath, $"list.txt \"{rom}\"");
+                psi.RedirectStandardInput = true;
+                psi.RedirectStandardError = true;
+                psi.WorkingDirectory = dir;
+
+                var p = Process.Start(psi);
+                p.WaitForExit();
+
+                if (p.ExitCode == 0)
+                    Log("UberASM Success!", ConsoleColor.Green);
+                else
+                {
+                    Log("UberASM Failure!", ConsoleColor.Red);
+                    Error(p.StandardError.ReadToEnd());
+                    return false;
+                }
+
+                Console.WriteLine();
+            }
+
+            // run AddMusicK
+            Log("AddMusicK", ConsoleColor.Cyan);
+            if (string.IsNullOrWhiteSpace(Config.AddMusicKPath))
+                Log("No path to AddMusicK provided, no music will be inserted.", ConsoleColor.Red);
+            else if (!File.Exists(Config.AddMusicKPath))
+                Log("AddMusicK not found at provided path, no music will be inserted.", ConsoleColor.Red);
+            else
+            {
+                var dir = Path.GetFullPath(Path.GetDirectoryName(Config.AddMusicKPath));
+                var rom = Path.GetRelativePath(dir, Path.GetFullPath(Config.TempPath));
+                Console.ForegroundColor = ConsoleColor.Yellow;
+
+                ProcessStartInfo psi = new ProcessStartInfo(Config.AddMusicKPath, $"\"{rom}\"");
+                psi.RedirectStandardInput = true;
+                psi.RedirectStandardError = true;
+                psi.WorkingDirectory = dir;
+
+                var p = Process.Start(psi);
+                while (!p.HasExited)
+                    p.StandardInput.Write('a');
+
+                if (p.ExitCode == 0)
+                    Log("AddMusicK Success!", ConsoleColor.Green);
+                else
+                {
+                    Log("AddMusicK Failure!", ConsoleColor.Red);
+                    Error(p.StandardError.ReadToEnd());
+                    return false;
+                }
+
+                Console.WriteLine();
             }
 
             // import gfx
@@ -259,7 +416,7 @@ namespace SMWPatcher
                 ProcessStartInfo psi;
                 Process p;
                 string globalDataROMPath = Path.Combine(
-                    Path.GetFullPath(Path.GetDirectoryName(Config.GlobalDataPath)), 
+                    Path.GetFullPath(Path.GetDirectoryName(Config.GlobalDataPath)),
                     Path.GetFileNameWithoutExtension(Config.GlobalDataPath) + ".smc");
 
                 //Apply patch to clean ROM
@@ -354,173 +511,6 @@ namespace SMWPatcher
                     File.Delete(globalDataROMPath);
 
                 Log("All Global Data Imported!", ConsoleColor.Green);
-                Console.WriteLine();
-            }
-
-            // asar patches
-            Log("Patches", ConsoleColor.Cyan);
-            if (string.IsNullOrWhiteSpace(Config.AsarPath))
-                Log("No path to Asar provided, not applying any patches.", ConsoleColor.Red);
-            else if (!File.Exists(Config.AsarPath))
-                Log("Asar not found at provided path, not applying any patches.", ConsoleColor.Red);
-            else if (Config.Patches.Count == 0)
-                Log("Path to Asar provided, but no patches were registerd to be applied.", ConsoleColor.Red);
-            else
-            {
-                foreach (var patch in Config.Patches)
-                {
-                    Lognl($"- Applying patch '{patch}'...  ", ConsoleColor.Yellow);
-
-                    ProcessStartInfo psi = new ProcessStartInfo(Config.AsarPath, $"\"{patch}\" \"{Config.TempPath}\"");
-                    psi.RedirectStandardOutput = true;
-                    psi.RedirectStandardError = true;
-
-                    var p = Process.Start(psi);
-                    p.WaitForExit();
-
-                    if (p.ExitCode == 0)
-                        Log("Success!", ConsoleColor.Green);
-                    else
-                    {
-                        Log("Failure!", ConsoleColor.Red);
-                        Error(p.StandardError.ReadToEnd());
-                        return false;
-                    }
-                }
-
-                Log("Patching Success!", ConsoleColor.Green);
-                Console.WriteLine();
-            }
-
-            // uber ASM
-            Log("Uber ASM", ConsoleColor.Cyan);
-            if (string.IsNullOrWhiteSpace(Config.UberASMPath))
-                Log("No path to UberASMTool provided, no UberASM will be inserted.", ConsoleColor.Red);
-            else if (!File.Exists(Config.UberASMPath))
-                Log("UberASMTool not found at provided path, no UberASM will be inserted.", ConsoleColor.Red);
-            else
-            {
-                var dir = Path.GetFullPath(Path.GetDirectoryName(Config.UberASMPath));
-                var rom = Path.GetRelativePath(dir, Path.GetFullPath(Config.TempPath));
-
-                ProcessStartInfo psi = new ProcessStartInfo(Config.UberASMPath, $"list.txt \"{rom}\"");
-                psi.RedirectStandardInput = true;
-                psi.RedirectStandardOutput = true;
-                psi.RedirectStandardError = true;
-                psi.WorkingDirectory = dir;
-
-                var p = Process.Start(psi);
-                p.WaitForExit();
-
-                if (p.ExitCode == 0)
-                    Log("UberASM Success!", ConsoleColor.Green);
-                else
-                {
-                    Log("UberASM Failure!", ConsoleColor.Red);
-                    Error(p.StandardError.ReadToEnd());
-                    return false;
-                }
-
-                Console.WriteLine();
-            }
-
-            // run GPS
-            Log("GPS", ConsoleColor.Cyan);
-            if (string.IsNullOrWhiteSpace(Config.GPSPath))
-                Log("No path to GPS provided, no blocks will be inserted.", ConsoleColor.Red);
-            else if (!File.Exists(Config.GPSPath))
-                Log("GPS not found at provided path, no blocks will be inserted.", ConsoleColor.Red);
-            else
-            {
-                var dir = Path.GetFullPath(Path.GetDirectoryName(Config.GPSPath));
-                var rom = Path.GetRelativePath(dir, Path.GetFullPath(Config.TempPath));
-
-                ProcessStartInfo psi = new ProcessStartInfo(Config.GPSPath, $"-l \"{dir}/list.txt\" \"{rom}\"");
-                psi.RedirectStandardInput = true;
-                psi.RedirectStandardOutput = true;
-                psi.RedirectStandardError = true;
-                psi.WorkingDirectory = dir;
-
-                var p = Process.Start(psi);
-                p.WaitForExit();
-
-                if (p.ExitCode == 0)
-                    Log("GPS Success!", ConsoleColor.Green);
-                else
-                {
-                    Log("GPS Failure!", ConsoleColor.Red);
-                    Error(p.StandardError.ReadToEnd());
-                    return false;
-                }
-
-                Console.WriteLine();
-            }
-
-            // run PIXI
-            Log("PIXI", ConsoleColor.Cyan);
-            if (string.IsNullOrWhiteSpace(Config.PixiPath))
-                Log("No path to Pixi provided, no sprites will be inserted.", ConsoleColor.Red);
-            else if (!File.Exists(Config.PixiPath))
-                Log("Pixi not found at provided path, no sprites will be inserted.", ConsoleColor.Red);
-            else
-            {
-                var dir = Path.GetFullPath(Path.GetDirectoryName(Config.PixiPath));
-                var list = Path.Combine(dir, "list.txt");
-                Console.ForegroundColor = ConsoleColor.Gray;
-
-                ProcessStartInfo psi = new ProcessStartInfo(Config.PixiPath, $"-l \"{list}\" \"{Config.TempPath}\"")
-                {
-                    RedirectStandardInput = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
-                };
-
-                var p = Process.Start(psi);
-                while (!p.HasExited)
-                    p.StandardInput.Write('a');
-
-                if (p.ExitCode == 0)
-                    Log("Pixi Success!", ConsoleColor.Green);
-                else
-                {
-                    Log("Pixi Failure!", ConsoleColor.Red);
-                    Error(p.StandardOutput.ReadToEnd());
-                    return false;
-                }
-
-                Console.WriteLine();
-            }
-
-            // run AddMusicK
-            Log("AddMusicK", ConsoleColor.Cyan);
-            if (string.IsNullOrWhiteSpace(Config.AddMusicKPath))
-                Log("No path to AddMusicK provided, no music will be inserted.", ConsoleColor.Red);
-            else if (!File.Exists(Config.AddMusicKPath))
-                Log("AddMusicK not found at provided path, no music will be inserted.", ConsoleColor.Red);
-            else
-            {
-                var dir = Path.GetFullPath(Path.GetDirectoryName(Config.AddMusicKPath));
-                var rom = Path.GetRelativePath(dir, Path.GetFullPath(Config.TempPath));
-                Console.ForegroundColor = ConsoleColor.Yellow;
-
-                ProcessStartInfo psi = new ProcessStartInfo(Config.AddMusicKPath, $"\"{rom}\"");
-                psi.RedirectStandardInput = true;
-                psi.RedirectStandardError = true;
-                psi.WorkingDirectory = dir;
-
-                var p = Process.Start(psi);
-                while (!p.HasExited)
-                    p.StandardInput.Write('a');
-
-                if (p.ExitCode == 0)
-                    Log("AddMusicK Success!", ConsoleColor.Green);
-                else
-                {
-                    Log("AddMusicK Failure!", ConsoleColor.Red);
-                    Error(p.StandardError.ReadToEnd());
-                    return false;
-                }
-
                 Console.WriteLine();
             }
 
@@ -628,13 +618,7 @@ namespace SMWPatcher
                 var fullCleanPath = Path.GetFullPath(Config.CleanPath);
                 var fullOutputPath = Path.GetFullPath(Config.OutputPath);
                 var fullPackagePath = Path.GetFullPath(Config.GlobalDataPath);
-
-                ProcessStartInfo psi = new ProcessStartInfo(Config.FlipsPath,
-                        $"--create --bps-delta \"{fullCleanPath}\" \"{fullOutputPath}\" \"{fullPackagePath}\"");
-                var p = Process.Start(psi);
-                p.WaitForExit();
-
-                if (p.ExitCode == 0)
+                if (Patch(fullCleanPath, fullOutputPath, fullPackagePath))
                     Log("Patch Creation Success!", ConsoleColor.Green);
                 else
                     Log("Patch Creation Failure!", ConsoleColor.Red);
@@ -761,6 +745,26 @@ namespace SMWPatcher
 
             Log("P - Package", ConsoleColor.Yellow);
             Log("Creates a BPS patch for your ROM against the configure clean SMW ROM, so that you can share it!\n");
+        }
+
+        static private bool Patch(string cleanROM, string outROM, string patchBPS)
+        {
+            var fullPatchPath = Path.GetFullPath(Config.InitialPatch);
+            var fullCleanPath = Path.GetFullPath(Config.CleanPath);
+            var fullTempPath = Path.GetFullPath(Config.TempPath);
+
+            Log($"Patching {cleanROM}\n\tto {outROM}\n\twith {patchBPS}", ConsoleColor.Yellow);
+
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            var psi = new ProcessStartInfo(Config.FlipsPath,
+                    $"--apply \"{patchBPS}\" \"{cleanROM}\" \"{outROM}\"");
+            var p = Process.Start(psi);
+            p.WaitForExit();
+
+            if (p.ExitCode == 0)
+                return true;
+            else
+                return false;
         }
 
         static private void Error(string error)

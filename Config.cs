@@ -5,7 +5,6 @@ using System.Text;
 
 namespace SMWPatcher
 {
-    [Serializable]
     public class Config
     {
         public string WorkingDirectory;
