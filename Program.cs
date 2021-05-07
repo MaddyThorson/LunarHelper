@@ -21,7 +21,8 @@ namespace SMWPatcher
             {
                 Log("Welcome to Lunar Helper ^_^", ConsoleColor.Cyan);
                 Log("B - Build, T - Build and Test, R - Test Only");
-                Log("Q - Quick Level Test, L - Lunar Magic, S - Save Global Data");
+                Log("Q - Quick Level Test, L - Lunar Magic");
+                Log("S - Save Levels and Global Data from Built ROM");
                 Log("P - Package, H - Help, ESC - Exit");
                 Console.WriteLine();
 
@@ -597,19 +598,23 @@ namespace SMWPatcher
 
         static private void Save()
         {
+            const int TotalSteps = 2;
+            int success = 0;
+
+            // save global data
             Log("Saving Global Data BPS...", ConsoleColor.Cyan);
             if (string.IsNullOrWhiteSpace(Config.GlobalDataPath))
-                Log("No path for GlobalData BPS provided! Save failed.", ConsoleColor.Red);
+                Log("No path for GlobalData BPS provided!", ConsoleColor.Red);
             else if (string.IsNullOrWhiteSpace(Config.CleanPath))
-                Log("No path for Clean ROM provided! Save failed.", ConsoleColor.Red);
+                Log("No path for Clean ROM provided!", ConsoleColor.Red);
             else if (!File.Exists(Config.CleanPath))
-                Log("Clean ROM does not exist! Save failed.", ConsoleColor.Red);
+                Log("Clean ROM does not exist!", ConsoleColor.Red);
             else if (string.IsNullOrWhiteSpace(Config.FlipsPath))
-                Log("No path to Flips provided! Save failed.", ConsoleColor.Red);
+                Log("No path to Flips provided!", ConsoleColor.Red);
             else if (!File.Exists(Config.FlipsPath))
-                Log("Flips not found at the provided path! Save failed.", ConsoleColor.Red);
+                Log("Flips not found at the provided path!", ConsoleColor.Red);
             else if (!File.Exists(Config.OutputPath))
-                Log("Output ROM does not exist! Save failed. Build first!", ConsoleColor.Red);
+                Log("Output ROM does not exist! Build first!", ConsoleColor.Red);
             else
             {
                 if (File.Exists(Config.GlobalDataPath))
@@ -619,9 +624,39 @@ namespace SMWPatcher
                 var fullOutputPath = Path.GetFullPath(Config.OutputPath);
                 var fullPackagePath = Path.GetFullPath(Config.GlobalDataPath);
                 if (CreatePatch(fullCleanPath, fullOutputPath, fullPackagePath))
-                    Log("Patch Creation Success!", ConsoleColor.Green);
+                {
+                    Log("Global Data Patch Success!", ConsoleColor.Green);
+                    success++;
+                }
                 else
-                    Log("Patch Creation Failure!", ConsoleColor.Red);
+                    Log("Global Data Patch Failure!", ConsoleColor.Red);
+            }
+
+            // save levels
+            Log("Exporting All Levels...", ConsoleColor.Cyan);
+            if (string.IsNullOrWhiteSpace(Config.LevelsPath))
+                Log("No path for Levels provided!", ConsoleColor.Red);
+            else if (string.IsNullOrWhiteSpace(Config.LunarMagicPath))
+                Log("No Lunar Magic Path provided!", ConsoleColor.Red);
+            else if (!File.Exists(Config.LunarMagicPath))
+                Log("Could not find Lunar Magic at the provided path!", ConsoleColor.Red);
+            else if (!File.Exists(Config.OutputPath))
+                Log("Output ROM does not exist! Build first!", ConsoleColor.Red);
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                ProcessStartInfo psi = new ProcessStartInfo(Config.LunarMagicPath,
+                            $"-ExportMultLevels \"{Config.OutputPath}\" \"{Config.LevelsPath}{Path.DirectorySeparatorChar}level\"");
+                var p = Process.Start(psi);
+                p.WaitForExit();
+
+                if (p.ExitCode == 0)
+                {
+                    Log("Levels Export Success!", ConsoleColor.Green);
+                    success++;
+                }
+                else
+                    Log("Levels Export Failure!", ConsoleColor.Red);
             }
 
             Console.WriteLine();
