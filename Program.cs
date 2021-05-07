@@ -20,14 +20,13 @@ namespace SMWPatcher
             while (running)
             {
                 Log("Welcome to Lunar Helper ^_^", ConsoleColor.Cyan);
-                Log("B - Build, T - Build and Test, R - Test Only");
-                Log("Q - Quick Level Test, L - Lunar Magic");
-                Log("S - Save Levels and Global Data from Built ROM");
+                Log("S - Save, B - Build, R - Run");
+                Log("T - Test (Save -> Build -> Run)");
+                Log("E - Edit (in Lunar Magic)");
                 Log("P - Package, H - Help, ESC - Exit");
                 Console.WriteLine();
 
                 var key = Console.ReadKey(true);
-
                 switch (key.Key)
                 {
                     case ConsoleKey.B:
@@ -45,14 +44,9 @@ namespace SMWPatcher
                             Test();
                         break;
 
-                    case ConsoleKey.Q:
-                        if (Init() && Levels(true))
-                            Test();
-                        break;
-
-                    case ConsoleKey.L:
+                    case ConsoleKey.E:
                         if (Init())
-                            Open();
+                            Edit();
                         break;
 
                     case ConsoleKey.S:
@@ -84,6 +78,9 @@ namespace SMWPatcher
                         Console.WriteLine();
                         break;
                 }
+
+                while (Console.KeyAvailable)
+                    Console.ReadKey(true);
             }
         }
 
@@ -516,7 +513,7 @@ namespace SMWPatcher
             }
 
             // import levels
-            if (!Levels(false))
+            if (!ImportLevels(false))
                 return false;
 
             // output final ROM
@@ -598,9 +595,6 @@ namespace SMWPatcher
 
         static private void Save()
         {
-            const int TotalSteps = 2;
-            int success = 0;
-
             // save global data
             Log("Saving Global Data BPS...", ConsoleColor.Cyan);
             if (string.IsNullOrWhiteSpace(Config.GlobalDataPath))
@@ -624,15 +618,19 @@ namespace SMWPatcher
                 var fullOutputPath = Path.GetFullPath(Config.OutputPath);
                 var fullPackagePath = Path.GetFullPath(Config.GlobalDataPath);
                 if (CreatePatch(fullCleanPath, fullOutputPath, fullPackagePath))
-                {
                     Log("Global Data Patch Success!", ConsoleColor.Green);
-                    success++;
-                }
                 else
                     Log("Global Data Patch Failure!", ConsoleColor.Red);
             }
 
             // save levels
+            ExportLevels();
+
+            Console.WriteLine();
+        }
+
+        static private bool ExportLevels()
+        {
             Log("Exporting All Levels...", ConsoleColor.Cyan);
             if (string.IsNullOrWhiteSpace(Config.LevelsPath))
                 Log("No path for Levels provided!", ConsoleColor.Red);
@@ -653,16 +651,16 @@ namespace SMWPatcher
                 if (p.ExitCode == 0)
                 {
                     Log("Levels Export Success!", ConsoleColor.Green);
-                    success++;
+                    return true;
                 }
                 else
                     Log("Levels Export Failure!", ConsoleColor.Red);
             }
 
-            Console.WriteLine();
+            return false;
         }
 
-        static private bool Levels(bool reinsert)
+        static private bool ImportLevels(bool reinsert)
         {
             var romPath = (reinsert ? Config.OutputPath : Config.TempPath);
 
@@ -696,7 +694,7 @@ namespace SMWPatcher
             return true;
         }
 
-        static private void Open()
+        static private void Edit()
         {
             if (!File.Exists(Config.OutputPath))
                 Error("Output ROM not found - build first!");
@@ -755,23 +753,20 @@ namespace SMWPatcher
         static private void Help()
         {
             Log("Function list:", ConsoleColor.Magenta);
+            Log("S - Save", ConsoleColor.Yellow);
+            Log("-Exports the global data (overworld, ex global animations, credits, and title screen) to a BPS patch.\n-Export all levels.\nThe ROM must already be built first.\n");
+
             Log("B - Build", ConsoleColor.Yellow);
             Log("Creates your ROM from scratch, using your provided clean SMW ROM as a base and inserting all the configured patches, graphics, levels, etc.\n");
-
-            Log("T - Build and Test", ConsoleColor.Yellow);
-            Log("Executes build, and then immediately loads the built ROM into the configured emulator for testing.\n");
 
             Log("R - Run", ConsoleColor.Yellow);
             Log("Loads the previously-built ROM into the configured emulator for testing. The ROM must already be built first.\n");
 
-            Log("Q - Quick Level Test", ConsoleColor.Yellow);
-            Log("Re-inserts levels into the previously-built ROM, but skips all of the other build steps, then immediately loads the ROM into the configured emulator for testing. This is useful for quickly testing level design iterations, when nothing else has changed. The ROM must already be built first.\n");
+            Log("T - Test (Save -> Build -> Run)", ConsoleColor.Yellow);
+            Log("Executes the above three commands in sequence. Useful to quickly save all your changes and then see them in action.\n");
 
-            Log("L - Lunar Magic", ConsoleColor.Yellow);
+            Log("E - Edit (in Lunar Magic)", ConsoleColor.Yellow);
             Log("Opens the previously-built ROM in Lunar Magic. The ROM must already be built first.\n");
-
-            Log("S - Save Global Data", ConsoleColor.Yellow);
-            Log("Exports all global data (overworld, ex global animations, credits, and title screen) from the previously-built ROM, and creates a BPS patch to store them, at the configured location. This BPS patch will be used in future builds, so be sure to use this function after changing any global data in the built ROM. The ROM must already be built first.\n");
 
             Log("P - Package", ConsoleColor.Yellow);
             Log("Creates a BPS patch for your ROM against the configure clean SMW ROM, so that you can share it!\n");
