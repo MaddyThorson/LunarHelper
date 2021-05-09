@@ -35,7 +35,7 @@ namespace SMWPatcher
                         break;
 
                     case ConsoleKey.T:
-                        if (Init() && Build())
+                        if (Init() && Save() && Build())
                             Test();
                         break;
 
@@ -593,7 +593,7 @@ namespace SMWPatcher
             return true;
         }
 
-        static private void Save()
+        static private bool Save()
         {
             // save global data
             Log("Saving Global Data BPS...", ConsoleColor.Cyan);
@@ -620,13 +620,18 @@ namespace SMWPatcher
                 if (CreatePatch(fullCleanPath, fullOutputPath, fullPackagePath))
                     Log("Global Data Patch Success!", ConsoleColor.Green);
                 else
+                {
                     Log("Global Data Patch Failure!", ConsoleColor.Red);
+                    return false;
+                }
             }
 
             // save levels
-            ExportLevels();
+            if (!ExportLevels())
+                return false;
 
             Console.WriteLine();
+            return true;
         }
 
         static private bool ExportLevels()
@@ -654,7 +659,9 @@ namespace SMWPatcher
                     return true;
                 }
                 else
+                {
                     Log("Levels Export Failure!", ConsoleColor.Red);
+                }
             }
 
             return false;
