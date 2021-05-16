@@ -180,7 +180,6 @@ namespace SMWPatcher
 
                 ProcessStartInfo psi = new ProcessStartInfo(Config.GPSPath, $"-l \"{dir}/list.txt\" \"{rom}\"");
                 psi.RedirectStandardInput = true;
-                psi.RedirectStandardError = true;
                 psi.WorkingDirectory = dir;
 
                 var p = Process.Start(psi);
@@ -211,7 +210,6 @@ namespace SMWPatcher
 
                 ProcessStartInfo psi = new ProcessStartInfo(Config.PixiPath, $"-l \"{list}\" \"{Config.TempPath}\"");
                 psi.RedirectStandardInput = true;
-                psi.RedirectStandardError = true;
 
                 var p = Process.Start(psi);
                 while (!p.HasExited)
@@ -222,7 +220,6 @@ namespace SMWPatcher
                 else
                 {
                     Log("Pixi Failure!", ConsoleColor.Red);
-                    Error(p.StandardOutput.ReadToEnd());
                     return false;
                 }
 
@@ -244,8 +241,6 @@ namespace SMWPatcher
                     Lognl($"- Applying patch '{patch}'...  ", ConsoleColor.Yellow);
 
                     ProcessStartInfo psi = new ProcessStartInfo(Config.AsarPath, $"\"{patch}\" \"{Config.TempPath}\"");
-                    psi.RedirectStandardOutput = true;
-                    psi.RedirectStandardError = true;
 
                     var p = Process.Start(psi);
                     p.WaitForExit();
@@ -255,7 +250,6 @@ namespace SMWPatcher
                     else
                     {
                         Log("Failure!", ConsoleColor.Red);
-                        Error(p.StandardError.ReadToEnd());
                         return false;
                     }
                 }
@@ -278,7 +272,6 @@ namespace SMWPatcher
 
                 ProcessStartInfo psi = new ProcessStartInfo(Config.UberASMPath, $"list.txt \"{rom}\"");
                 psi.RedirectStandardInput = true;
-                psi.RedirectStandardError = true;
                 psi.WorkingDirectory = dir;
 
                 var p = Process.Start(psi);
@@ -289,7 +282,6 @@ namespace SMWPatcher
                 else
                 {
                     Log("UberASM Failure!", ConsoleColor.Red);
-                    Error(p.StandardError.ReadToEnd());
                     return false;
                 }
 
@@ -310,7 +302,6 @@ namespace SMWPatcher
 
                 ProcessStartInfo psi = new ProcessStartInfo(Config.AddMusicKPath, $"\"{rom}\"");
                 psi.RedirectStandardInput = true;
-                psi.RedirectStandardError = true;
                 psi.WorkingDirectory = dir;
 
                 var p = Process.Start(psi);
@@ -322,7 +313,6 @@ namespace SMWPatcher
                 else
                 {
                     Log("AddMusicK Failure!", ConsoleColor.Red);
-                    Error(p.StandardError.ReadToEnd());
                     return false;
                 }
 
@@ -595,6 +585,12 @@ namespace SMWPatcher
 
         static private bool Save()
         {
+            if (!File.Exists(Config.OutputPath))
+            {
+                Log("Output ROM does not exist! Build first!", ConsoleColor.Red);
+                return false;
+            }
+
             // save global data
             Log("Saving Global Data BPS...", ConsoleColor.Cyan);
             if (string.IsNullOrWhiteSpace(Config.GlobalDataPath))
@@ -607,8 +603,6 @@ namespace SMWPatcher
                 Log("No path to Flips provided!", ConsoleColor.Red);
             else if (!File.Exists(Config.FlipsPath))
                 Log("Flips not found at the provided path!", ConsoleColor.Red);
-            else if (!File.Exists(Config.OutputPath))
-                Log("Output ROM does not exist! Build first!", ConsoleColor.Red);
             else
             {
                 if (File.Exists(Config.GlobalDataPath))
@@ -622,6 +616,56 @@ namespace SMWPatcher
                 else
                 {
                     Log("Global Data Patch Failure!", ConsoleColor.Red);
+                    return false;
+                }
+            }
+
+            // export map16
+            Log("Exporting Map16...", ConsoleColor.Cyan);
+            if (string.IsNullOrWhiteSpace(Config.Map16Path))
+                Log("No path for Map16 provided!", ConsoleColor.Red);
+            else if (string.IsNullOrWhiteSpace(Config.LunarMagicPath))
+                Log("No Lunar Magic Path provided!", ConsoleColor.Red);
+            else if (!File.Exists(Config.LunarMagicPath))
+                Log("Could not find Lunar Magic at the provided path!", ConsoleColor.Red);
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                ProcessStartInfo psi = new ProcessStartInfo(Config.LunarMagicPath,
+                            $"-ExportAllMap16 \"{Config.OutputPath}\" \"{Config.Map16Path}\"");
+                var p = Process.Start(psi);
+                p.WaitForExit();
+
+                if (p.ExitCode == 0)
+                    Log("Map16 Export Success!", ConsoleColor.Green);
+                else
+                {
+                    Log("Map16 Export Failure!", ConsoleColor.Red);
+                    return false;
+                }
+            }
+
+            // export shared palette
+            Log("Exporting Shared Palette...", ConsoleColor.Cyan);
+            if (string.IsNullOrWhiteSpace(Config.SharedPalettePath))
+                Log("No path for Shared Palette provided!", ConsoleColor.Red);
+            else if (string.IsNullOrWhiteSpace(Config.LunarMagicPath))
+                Log("No Lunar Magic Path provided!", ConsoleColor.Red);
+            else if (!File.Exists(Config.LunarMagicPath))
+                Log("Could not find Lunar Magic at the provided path!", ConsoleColor.Red);
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                ProcessStartInfo psi = new ProcessStartInfo(Config.LunarMagicPath,
+                            $"-ExportSharedPalette \"{Config.OutputPath}\" \"{Config.SharedPalettePath}\"");
+                var p = Process.Start(psi);
+                p.WaitForExit();
+
+                if (p.ExitCode == 0)
+                    Log("Shared Palette Export Success!", ConsoleColor.Green);
+                else
+                {
+                    Log("Shared Palette Export Failure!", ConsoleColor.Red);
                     return false;
                 }
             }
