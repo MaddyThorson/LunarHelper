@@ -796,6 +796,10 @@ namespace SMWPatcher
                 }
             }
 
+            //Open explorer and select patch file
+            if (File.Exists(Config.PackagePath))
+                Process.Start("explorer.exe", $"/select, \"{Config.PackagePath}\"");
+
             Console.WriteLine();
 
             return true;
