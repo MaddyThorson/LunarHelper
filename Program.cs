@@ -267,6 +267,14 @@ namespace SMWPatcher
             else
             {
                 var dir = Path.GetFullPath(Path.GetDirectoryName(Config.UberASMPath));
+
+                // create work folder if missing
+                {
+                    string bin = Path.Combine(dir, "asm", "work");
+                    if (!Directory.Exists(bin))
+                        Directory.CreateDirectory(bin);
+                }
+
                 var rom = Path.GetRelativePath(dir, Path.GetFullPath(Config.TempPath));
                 Console.ForegroundColor = ConsoleColor.Yellow;
 
@@ -297,6 +305,14 @@ namespace SMWPatcher
             else
             {
                 var dir = Path.GetFullPath(Path.GetDirectoryName(Config.AddMusicKPath));
+
+                // create bin folder if missing
+                {
+                    string bin = Path.Combine(dir, "asm", "SNES", "bin");
+                    if (!Directory.Exists(bin))
+                        Directory.CreateDirectory(bin);
+                }
+
                 var rom = Path.GetRelativePath(dir, Path.GetFullPath(Config.TempPath));
                 Console.ForegroundColor = ConsoleColor.Yellow;
 
