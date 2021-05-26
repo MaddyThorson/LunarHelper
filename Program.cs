@@ -850,7 +850,7 @@ namespace SMWPatcher
             Log("Opens the previously-built ROM in Lunar Magic. The ROM must already be built first.\n");
 
             Log("P - Package", ConsoleColor.Yellow);
-            Log("Creates a BPS patch for your ROM against the configure clean SMW ROM, so that you can share it!\n");
+            Log("Creates a BPS patch for your ROM against the configured clean SMW ROM, so that you can share it!\n");
         }
 
         static private bool ApplyPatch(string cleanROM, string outROM, string patchBPS)
