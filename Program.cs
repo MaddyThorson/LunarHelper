@@ -27,6 +27,8 @@ namespace SMWPatcher
                 Console.WriteLine();
 
                 var key = Console.ReadKey(true);
+                Console.Clear();
+
                 switch (key.Key)
                 {
                     case ConsoleKey.B:
@@ -98,27 +100,35 @@ namespace SMWPatcher
 
             // set the working directory
             if (!string.IsNullOrWhiteSpace(Config.WorkingDirectory))
+            {
+                if (!Directory.Exists(Config.WorkingDirectory))
+                {
+                    Error("The configured Working Directory doesn't exist");
+                    return false;
+                }
+
                 Directory.SetCurrentDirectory(Config.WorkingDirectory);
+            } 
 
             // some error checks
             if (string.IsNullOrWhiteSpace(Config.CleanPath))
             {
-                Error("No Clean ROM path provided!");
+                Error("No Clean ROM path provided");
                 return false;
             }
             else if (!File.Exists(Config.CleanPath))
             {
-                Error($"Clean ROM file '{Config.CleanPath}' does not exist!");
+                Error($"Clean ROM file '{Config.CleanPath}' does not exist");
                 return false;
             }
             else if (string.IsNullOrWhiteSpace(Config.OutputPath))
             {
-                Error("No Output ROM path provided!");
+                Error("No Output ROM path provided");
                 return false;
             }
             else if (string.IsNullOrWhiteSpace(Config.TempPath))
             {
-                Error("No Temp ROM path provided!");
+                Error("No Temp ROM path provided");
                 return false;
             }
 
@@ -878,7 +888,7 @@ namespace SMWPatcher
         static private void Error(string error)
         {
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"ERROR: {error}");
+            Console.WriteLine($"ERROR: {error}\n");
         }
 
         static private void Log(string msg, ConsoleColor color = ConsoleColor.White)
