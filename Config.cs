@@ -27,6 +27,7 @@ namespace SMWPatcher
         public string Map16Path;
         public string SharedPalettePath;
         public string GlobalDataPath;
+        public string TitleMovesPath;
 
         public List<string> Patches = new List<string>();
 
@@ -78,6 +79,7 @@ namespace SMWPatcher
             vars.TryGetValue("map16", out config.Map16Path);
             vars.TryGetValue("shared_palette", out config.SharedPalettePath);
             vars.TryGetValue("global_data", out config.GlobalDataPath);
+            vars.TryGetValue("title_moves", out config.TitleMovesPath);
             vars.TryGetValue("initial_patch", out config.InitialPatch);
             lists.TryGetValue("patches", out config.Patches);
 

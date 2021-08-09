@@ -396,6 +396,29 @@ namespace SMWPatcher
                 Console.WriteLine();
             }
 
+            // import title moves
+            Log("Title Moves", ConsoleColor.Cyan);
+            if (string.IsNullOrWhiteSpace(Config.TitleMovesPath))
+                Log("No path to Title Moves provided, no title moves will be imported.", ConsoleColor.Red);
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                ProcessStartInfo psi = new ProcessStartInfo(Config.LunarMagicPath,
+                            $"-ImportTitleMoves \"{Config.TempPath}\" \"{Config.TitleMovesPath}\"");
+                var p = Process.Start(psi);
+                p.WaitForExit();
+
+                if (p.ExitCode == 0)
+                    Log("Title Moves Import Success!", ConsoleColor.Green);
+                else
+                {
+                    Log("Title Moves Import Failure!", ConsoleColor.Red);
+                    return false;
+                }
+
+                Console.WriteLine();
+            }
+
             // import shared palette
             Log("Shared Palette", ConsoleColor.Cyan);
             if (string.IsNullOrWhiteSpace(Config.SharedPalettePath))
@@ -692,6 +715,31 @@ namespace SMWPatcher
                 else
                 {
                     Log("Shared Palette Export Failure!", ConsoleColor.Red);
+                    return false;
+                }
+            }
+
+            // export title moves
+            Log("Exporting Title Moves...", ConsoleColor.Cyan);
+            if (string.IsNullOrWhiteSpace(Config.TitleMovesPath))
+                Log("No path for Shared Palette provided!", ConsoleColor.Red);
+            else if (string.IsNullOrWhiteSpace(Config.LunarMagicPath))
+                Log("No Lunar Magic Path provided!", ConsoleColor.Red);
+            else if (!File.Exists(Config.LunarMagicPath))
+                Log("Could not find Lunar Magic at the provided path!", ConsoleColor.Red);
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                ProcessStartInfo psi = new ProcessStartInfo(Config.LunarMagicPath,
+                            $"-ExportTitleMoves \"{Config.OutputPath}\" \"{Config.TitleMovesPath}\"");
+                var p = Process.Start(psi);
+                p.WaitForExit();
+
+                if (p.ExitCode == 0)
+                    Log("Title Moves Export Success!", ConsoleColor.Green);
+                else
+                {
+                    Log("Title Moves Export Failure!", ConsoleColor.Red);
                     return false;
                 }
             }
