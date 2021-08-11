@@ -722,7 +722,7 @@ namespace SMWPatcher
             // export title moves
             Log("Exporting Title Moves...", ConsoleColor.Cyan);
             if (string.IsNullOrWhiteSpace(Config.TitleMovesPath))
-                Log("No path for Shared Palette provided!", ConsoleColor.Red);
+                Log("No path for Title Moves provided!", ConsoleColor.Red);
             else if (string.IsNullOrWhiteSpace(Config.LunarMagicPath))
                 Log("No Lunar Magic Path provided!", ConsoleColor.Red);
             else if (!File.Exists(Config.LunarMagicPath))
