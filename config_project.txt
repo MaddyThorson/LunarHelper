@@ -1,10 +1,11 @@
 -- this is an example project file
--- Lunar Helper will use every config_*.txt file in its directory,
--- for a solo project, you could simply configure everything in one config file
--- but for collabs, it's a good idea to split configs between things that 
--- are relative to the project path and tools like Lunar Magic that each
--- editor may have installed at a different location, as in this example
+-- Lunar Helper will load every config_*.txt file in its directory.
+-- For a solo project, you could simply configure everything in one big config file,
+-- but for collabs it's a good idea to split config files between things that 
+-- are relative to the project path like levels, and tools like Lunar Magic that each
+-- collaborator may have installed at a different location, as in this example
 -- (see config_user.txt for the rest of the example configuration)
+ 
  
 -- if defined, the initial patch will be applied before any other steps
 -- It's good idea to open your clean ROM in Lunar Magic, save it to another location, and create a patch
