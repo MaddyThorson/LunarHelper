@@ -6,8 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove=".gitattributes" />
+    <None Remove=".gitignore" />
     <None Remove="config_project.txt" />
     <None Remove="config_user.txt" />
+    <None Remove="LICENSE" />
+    <None Remove="README.md" />
   </ItemGroup>
 
   <ItemGroup>
