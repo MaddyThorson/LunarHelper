@@ -38,17 +38,20 @@ namespace SMWPatcher
 
         #region load
 
-        static public Config Load()
+        static public Config Load(out string error)
         {
+            error = "";
+
             try
             {
-                List<string> data = new List<string>();
+                var data = new List<string>();
                 foreach (var file in Directory.EnumerateFiles(Directory.GetCurrentDirectory(), "config*.txt", SearchOption.TopDirectoryOnly))
                     data.Add(File.ReadAllText(file));
                 return Load(data);
             }
-            catch
+            catch (Exception e)
             {
+                error = e.Message;
                 return null;
             }
         }
@@ -111,7 +114,11 @@ namespace SMWPatcher
                     var sp = str.Split('=');
                     if (sp.Length != 2)
                         throw new Exception("Malformed assignment");
-                    vars.Add(sp[0].Trim(), sp[1].Trim());
+
+                    var key = sp[0].Trim();
+                    if (vars.ContainsKey(key))
+                        throw new Exception($"Duplicate config key: '{key}'");
+                    vars.Add(key, sp[1].Trim());
                 }
                 else if (peek != null && peek.Trim() == "[")
                 {

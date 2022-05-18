@@ -91,10 +91,10 @@ namespace SMWPatcher
             Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
 
             // load config
-            Config = Config.Load();
+            Config = Config.Load(out var err);
             if (Config == null)
             {
-                Error("Could not open config.txt file(s)");
+                Error($"Could not parse config.txt file(s)\n{err}");
                 return false;
             }
 
