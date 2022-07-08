@@ -11,7 +11,7 @@ namespace SMWPatcher
         static public Config Config { get; private set; }
 
         static private readonly Regex LevelRegex = new Regex("[0-9a-fA-F]{3}");
-        static private Process RetroArchProcess;
+        static private Process EmulatorProcess;
         static private Process LunarMagicProcess;
 
         static void Main(string[] args)
@@ -612,18 +612,38 @@ namespace SMWPatcher
                 }
             }
 
-            // retroarch
+            if (EmulatorProcess != null && !EmulatorProcess.HasExited)
+                EmulatorProcess.Kill(true);
+
             if (!string.IsNullOrWhiteSpace(Config.RetroArchPath))
             {
+                // retroarch
                 Log("Launching RetroArch...", ConsoleColor.Yellow);
                 var fullRom = Path.GetFullPath(Config.OutputPath);
 
-                if (RetroArchProcess != null && !RetroArchProcess.HasExited)
-                    RetroArchProcess.Kill(true);
-
                 ProcessStartInfo psi = new ProcessStartInfo(Config.RetroArchPath,
                     $"-L \"{Config.RetroArchCore}\" \"{fullRom}\"");
-                RetroArchProcess = Process.Start(psi);
+                EmulatorProcess = Process.Start(psi);
+            }
+            else if (!string.IsNullOrWhiteSpace(Config.Snes9xPath))
+            {
+                // snes9x
+                Log("Launching Snes9x...", ConsoleColor.Yellow);
+                var fullRom = Path.GetFullPath(Config.OutputPath);
+
+                ProcessStartInfo psi = new ProcessStartInfo(Config.Snes9xPath,
+                    $"\"{fullRom}\"");
+                EmulatorProcess = Process.Start(psi);
+            }
+            else if (!string.IsNullOrWhiteSpace(Config.MesenSPath))
+            {
+                // mesen-s
+                Log("Launching Mesen-S...", ConsoleColor.Yellow);
+                var fullRom = Path.GetFullPath(Config.OutputPath);
+
+                ProcessStartInfo psi = new ProcessStartInfo(Config.MesenSPath,
+                    $"\"{fullRom}\"");
+                EmulatorProcess = Process.Start(psi);
             }
 
             Log("Test routine complete!", ConsoleColor.Magenta);

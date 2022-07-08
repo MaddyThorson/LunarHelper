@@ -12,6 +12,10 @@ asar_path = ../Tools/asar181/asar.exe
 lm_path = ../Tools/Lunar Magic 3.2.1/Lunar Magic.exe
 flips_path = ../Tools/FLIPS/flips.exe
 
--- emulator and testing
+-- emulators and testing
+-- if multiple emulators are configured, priority will be retroarch -> snes9x -> mesen-s
+-- i'd just delete or comment out (with --) the ones you don't want to use
 retroarch_path = C:\Users\user\AppData\Roaming\RetroArch\retroarch.exe
 retroarch_core = C:\Users\user\AppData\Roaming\RetroArch\cores\snes9x_libretro.dll
+snes9x_path = C:\path\to\snes9x
+mesens_path = C:\path\to\mesen-s
