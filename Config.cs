@@ -35,6 +35,8 @@ namespace SMWPatcher
         public string TestLevelDest;
         public string RetroArchPath;
         public string RetroArchCore;
+        public string Snes9xPath;
+        public string MesenSPath;
 
         #region load
 
@@ -90,6 +92,8 @@ namespace SMWPatcher
             vars.TryGetValue("test_level_dest", out config.TestLevelDest);
             vars.TryGetValue("retroarch_path", out config.RetroArchPath);
             vars.TryGetValue("retroarch_core", out config.RetroArchCore);
+            vars.TryGetValue("snes9x_path", out config.Snes9xPath);
+            vars.TryGetValue("mesens_path", out config.MesenSPath);
 
             return config;
         }
@@ -135,7 +139,7 @@ namespace SMWPatcher
                         str = lines[i];
                         if (str.Trim() == "]")
                             break;
-                        else
+                        else if (!String.IsNullOrWhiteSpace(str))
                             list.Add(str.Trim());
 
                         i++;
