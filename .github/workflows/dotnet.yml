@@ -1,0 +1,106 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: .NET
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ "windows", "ubuntu" ]
+
+    runs-on: ${{ matrix.os }}-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build release
+      run: mkdir github_bin && dotnet build ./LunarHelper.csproj --no-restore --configuration Release --output github_bin
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3.1.2
+      with:
+        name: ${{ matrix.os }}
+        path: ./github_bin
+  tag:
+    permissions:
+      contents: write
+    runs-on: windows-latest
+    outputs:
+      tagname: ${{ steps.create-tag.outputs.tagname }}
+      releaseid: ${{ steps.create-tag.outputs.releaseid }}
+    steps:
+    - uses: actions/checkout@v3
+    - name: Create release tag
+      id: create-tag
+      run: |
+        $releaseid = "$(New-Guid)"
+        $tagname = "release_$releaseid"
+        git tag $tagname
+        Add-Content -Path ($Env:GITHUB_OUTPUT) "tagname=$tagname"
+        Add-Content -Path ($Env:GITHUB_OUTPUT) "releaseid=$releaseid"
+        git push --tags origin --force
+  release:
+    needs: [ "build", "tag" ]
+    runs-on: ubuntu-latest
+    permissions: write-all
+    outputs:
+      id: ${{ steps.create-release.outputs.id }}
+      upload_url: ${{ steps.create-release.outputs.upload_url }}
+    steps:
+    - name: Create draft release
+      id: create-release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ needs.tag.outputs.tagname }}
+        release_name: Release ${{ needs.tag.outputs.releaseid }}
+        draft: true
+        prerelease: false
+  publish:
+    strategy:
+     matrix:
+       platform: [ "windows", "ubuntu" ]
+    needs: [ "release" ]
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+    - name: Download artifact
+      uses: actions/download-artifact@v2.1.1
+      with:
+        name: ${{ matrix.platform }}
+        path: ./github_bin
+    - name: Pack files
+      run: zip -r ./LunarHelper.zip ./github_bin
+    - name: Upload release asset
+      uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.release.outputs.upload_url }}
+        asset_path: ./LunarHelper.zip
+        asset_name: LunarHelper_${{ matrix.platform }}.zip
+        asset_content_type: application/zip
+    - name: Publish release
+      uses: eregon/publish-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.github_token }}
+      with:
+        release_id: ${{ needs.release.outputs.id }}
+        
+    
+    
+    
+    
+    
