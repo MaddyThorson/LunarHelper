@@ -1,7 +1,4 @@
 # Lunar Helper
  A tiny build system for Lunar Magic projects
 
- Not well documented yet, sorry. 
- It will read config*.txt files in its directory for setup, check out config_user.txt and config_project.txt for an example.
- 
-![image](https://user-images.githubusercontent.com/669642/115128418-790f0080-9f92-11eb-97f9-4ffeed325cb7.png)
+ **Important Note:** This project has seen little maintenance and as such, Underway has taken up the torch of pushing forward SMW build systems with their project [Callisto](https://github.com/Underrout/callisto). I'm very glad that Lunar Helper inspired SMW hackers to pursue build systems, and I would highly recommend using Callisto or other alternatives rather than Lunar Helper.
